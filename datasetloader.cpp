@@ -7,31 +7,47 @@
 #include <QDebug>
 #include <fstream>
 
-Data::Data(const int & numCols, const int & numRows) {
-    img = new QImage(numCols, numRows, QImage::Format_Grayscale8);
+#include "backproptrainer.cpp"
+
+
+Data::Data(const int & numCols, const int & numRows)
+{
     img_d = new double[numCols * numRows];
+    img = new QImage(numCols, numRows, QImage::Format_Grayscale8);
     num = 0;
+
 }
 
-Data::~Data() {
+Data::~Data()
+{
+    delete[] img_d;
     delete img;
 }
+
 
 DataSetLoader::DataSetLoader()
 {
     // Initialize random seed
     std::srand(std::time(0));
+    m_trainData = new std::vector<Data *>();
+    m_testData = new std::vector<Data *>();
+
 }
 
 DataSetLoader::~DataSetLoader()
 {
-    for(auto data : trainData())
+    for(auto data : *trainData())
         delete data;
-    for(auto data : testData())
+    for(auto data : *testData())
         delete data;
+
+
+    delete m_trainData;
+    delete m_testData;
 }
 
-void DataSetLoader::loadSets(QString dirpath)
+
+bool DataSetLoader::loadSets(QString dirpath)
 {
     QString trainImagesPath = dirpath + "/train-images.idx3-ubyte";
     QString trainLabelsPath = dirpath + "/train-labels.idx1-ubyte";
@@ -57,15 +73,17 @@ void DataSetLoader::loadSets(QString dirpath)
         testLabelsFile.close();
     } else {
         qDebug() << ("Open file failed: " + trainImagesFile.errorString());
+        return false;
     }
+    return true;
 }
 
-std::vector<Data *> DataSetLoader::trainData() const
+std::vector<Data *> *DataSetLoader::trainData() const
 {
     return m_trainData;
 }
 
-std::vector<Data *> DataSetLoader::testData() const
+std::vector<Data *> *DataSetLoader::testData() const
 {
     return m_testData;
 }
@@ -73,19 +91,19 @@ std::vector<Data *> DataSetLoader::testData() const
 Data *DataSetLoader::randomTrainData(int min, int max)
 {
     if (max <= -1)
-        max = m_trainData.size();  // Wenn max -1 ist, setzen wir max auf die Größe des Vektors
+        max = m_trainData->size();  // Wenn max -1 ist, setzen wir max auf die Größe des Vektors
 
-    if (min < 0 || min >= (int)m_trainData.size() || max <= min) {
+    if (min < 0 || min >= (int)m_trainData->size() || max <= min) {
         return nullptr;  // Ungültige Argumente
     }
 
     int randomIndex = std::rand() % (max - min) + min;  // Zufälliger Index zwischen min und max
 
-    return m_trainData.at(randomIndex);
+    return m_trainData->at(randomIndex);
 
 }
 
-void DataSetLoader::readImages(QFile& file, std::vector<Data *>& data)
+void DataSetLoader::readImages(QFile& file, std::vector<Data *>* data)
 {
     QDataStream in(&file);
     in.setByteOrder(QDataStream::BigEndian);
@@ -118,12 +136,12 @@ void DataSetLoader::readImages(QFile& file, std::vector<Data *>& data)
             }
         }
 
-        data.push_back(newData);
+        data->push_back(newData);
     }
 
 }
 
-void DataSetLoader::readLabels(QFile& file, std::vector<Data *>& data)
+void DataSetLoader::readLabels(QFile& file, std::vector<Data *> *data)
 {
     QDataStream in(&file);
     in.setByteOrder(QDataStream::BigEndian);
@@ -137,7 +155,7 @@ void DataSetLoader::readLabels(QFile& file, std::vector<Data *>& data)
     {
         quint8 label;
         in >> label;
-        data[i]->num = label;
+        data->at(i)->num = label;
     }
 }
 

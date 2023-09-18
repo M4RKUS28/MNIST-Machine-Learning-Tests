@@ -40,8 +40,6 @@ public:
     QGroupBox *groupBox;
     QVBoxLayout *verticalLayout;
     QSpacerItem *verticalSpacer;
-    QPushButton *pushButtonStart;
-    QSpacerItem *verticalSpacer_2;
     QLabel *label_5;
     QLabel *label_iteration;
     QFrame *line;
@@ -52,6 +50,14 @@ public:
     QDoubleSpinBox *doubleSpinBoxLearnRate;
     QLabel *label_4;
     QDoubleSpinBox *doubleSpinBox_Monumentum;
+    QSpacerItem *verticalSpacer_4;
+    QFrame *line_4;
+    QPushButton *pushButton_save;
+    QPushButton *pushButton_load;
+    QSpacerItem *verticalSpacer_2;
+    QFrame *line_5;
+    QPushButton *pushButtonStart;
+    QPushButton *pushButton_stop;
     QSpacerItem *verticalSpacer_3;
     QMenuBar *menubar;
     QStatusBar *statusbar;
@@ -109,15 +115,6 @@ public:
         verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         verticalLayout->addItem(verticalSpacer);
-
-        pushButtonStart = new QPushButton(groupBox);
-        pushButtonStart->setObjectName("pushButtonStart");
-
-        verticalLayout->addWidget(pushButtonStart);
-
-        verticalSpacer_2 = new QSpacerItem(20, 80, QSizePolicy::Minimum, QSizePolicy::Fixed);
-
-        verticalLayout->addItem(verticalSpacer_2);
 
         label_5 = new QLabel(groupBox);
         label_5->setObjectName("label_5");
@@ -183,6 +180,48 @@ public:
 
         verticalLayout->addWidget(doubleSpinBox_Monumentum);
 
+        verticalSpacer_4 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
+
+        verticalLayout->addItem(verticalSpacer_4);
+
+        line_4 = new QFrame(groupBox);
+        line_4->setObjectName("line_4");
+        line_4->setFrameShape(QFrame::HLine);
+        line_4->setFrameShadow(QFrame::Sunken);
+
+        verticalLayout->addWidget(line_4);
+
+        pushButton_save = new QPushButton(groupBox);
+        pushButton_save->setObjectName("pushButton_save");
+
+        verticalLayout->addWidget(pushButton_save);
+
+        pushButton_load = new QPushButton(groupBox);
+        pushButton_load->setObjectName("pushButton_load");
+
+        verticalLayout->addWidget(pushButton_load);
+
+        verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Fixed);
+
+        verticalLayout->addItem(verticalSpacer_2);
+
+        line_5 = new QFrame(groupBox);
+        line_5->setObjectName("line_5");
+        line_5->setFrameShape(QFrame::HLine);
+        line_5->setFrameShadow(QFrame::Sunken);
+
+        verticalLayout->addWidget(line_5);
+
+        pushButtonStart = new QPushButton(groupBox);
+        pushButtonStart->setObjectName("pushButtonStart");
+
+        verticalLayout->addWidget(pushButtonStart);
+
+        pushButton_stop = new QPushButton(groupBox);
+        pushButton_stop->setObjectName("pushButton_stop");
+
+        verticalLayout->addWidget(pushButton_stop);
+
         verticalSpacer_3 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         verticalLayout->addItem(verticalSpacer_3);
@@ -206,18 +245,21 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
+        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "TANH", nullptr));
         label->setText(QCoreApplication::translate("MainWindow", "TextLabel", nullptr));
         label_num->setText(QCoreApplication::translate("MainWindow", "0", nullptr));
         label_num_cor->setText(QCoreApplication::translate("MainWindow", "0", nullptr));
-        groupBox->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
-        pushButtonStart->setText(QCoreApplication::translate("MainWindow", "start", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("MainWindow", "-", nullptr));
         label_5->setText(QCoreApplication::translate("MainWindow", "Durchlauf:", nullptr));
         label_iteration->setText(QCoreApplication::translate("MainWindow", "0", nullptr));
         label_3->setText(QCoreApplication::translate("MainWindow", "Error Rate:", nullptr));
         label_errorrrate->setText(QCoreApplication::translate("MainWindow", "-", nullptr));
         label_2->setText(QCoreApplication::translate("MainWindow", "LearnRate", nullptr));
         label_4->setText(QCoreApplication::translate("MainWindow", "Monumentum:", nullptr));
+        pushButton_save->setText(QCoreApplication::translate("MainWindow", "save", nullptr));
+        pushButton_load->setText(QCoreApplication::translate("MainWindow", "load", nullptr));
+        pushButtonStart->setText(QCoreApplication::translate("MainWindow", "start", nullptr));
+        pushButton_stop->setText(QCoreApplication::translate("MainWindow", "stop", nullptr));
     } // retranslateUi
 
 };

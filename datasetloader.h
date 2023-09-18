@@ -11,9 +11,7 @@
 struct Data
 {
     Data(const int &numCols, const int &numRows);
-
     ~Data();
-
 
     QImage * img;
     double * img_d;
@@ -27,19 +25,19 @@ public:
     DataSetLoader();
     ~DataSetLoader();
 
-    void loadSets(QString dirpath);
+    bool loadSets(QString dirpath);
 
-    std::vector<Data *> trainData() const;
-    std::vector<Data *> testData() const;
+    std::vector<Data *> * trainData() const;
+    std::vector<Data *> * testData() const;
 
     Data *randomTrainData(int min = 0, int max = -1);
 
 private:
-    std::vector<Data *> m_trainData;
-    std::vector<Data *> m_testData;
+    std::vector<Data *> * m_trainData;
+    std::vector<Data *> * m_testData;
 
-    void readImages(QFile& file, std::vector<Data *>& data);
-    void readLabels(QFile& file, std::vector<Data *>& data);
+    void readImages(QFile& file, std::vector<Data *>* data);
+    void readLabels(QFile& file, std::vector<Data *>* data);
     unsigned char readByte(QFile& file);
     unsigned int readInt32(QFile& file);
 

@@ -9,11 +9,13 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    backproptrainer.cpp \
     datasetloader.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
+    backproptrainer.h \
     datasetloader.h \
     mainwindow.h
 
@@ -25,14 +27,17 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/'../../../../Nextcloud/PC-Documents/Programier Zeug/Qt-Projekte/ViewNet/release/' -lViewNet
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/'../../../../Nextcloud/PC-Documents/Programier Zeug/Qt-Projekte/ViewNet/debug/' -lViewNet
+INCLUDEPATH += $$PWD/../GenNet
+DEPENDPATH += $$PWD/../GenNet
 
-INCLUDEPATH += $$PWD/'../../../../Nextcloud/PC-Documents/Programier Zeug/Qt-Projekte/ViewNet'
-DEPENDPATH += $$PWD/'../../../../Nextcloud/PC-Documents/Programier Zeug/Qt-Projekte/ViewNet'
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../GenNet/release/ -lGenNet
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../GenNet/debug/ -lGenNet
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/'../../../../Nextcloud/PC-Documents/Programier Zeug/Qt-Projekte/GenNet/release/' -lGenNet
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/'../../../../Nextcloud/PC-Documents/Programier Zeug/Qt-Projekte/GenNet/debug/' -lGenNet
 
-INCLUDEPATH += $$PWD/'../../../../Nextcloud/PC-Documents/Programier Zeug/Qt-Projekte/GenNet'
-DEPENDPATH += $$PWD/'../../../../Nextcloud/PC-Documents/Programier Zeug/Qt-Projekte/GenNet'
+INCLUDEPATH += $$PWD/../ViewNet
+DEPENDPATH += $$PWD/../ViewNet
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../ViewNet/release/ -lViewNet
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../ViewNet/debug/ -lViewNet
+

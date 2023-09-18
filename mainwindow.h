@@ -5,7 +5,6 @@
 #include "datasetloader.h"
 #include "net.h"
 
-
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -21,10 +20,18 @@ public:
 private slots:
     void on_pushButtonStart_clicked();
 
+    void on_pushButton_save_clicked();
+
+    void on_pushButton_load_clicked();
+
+    void on_pushButton_stop_clicked();
+
 private:
     Ui::MainWindow *ui;
     DataSetLoader * dataSets;
     Net * net;
+    bool running;
+    size_t index;
 
 
 };
