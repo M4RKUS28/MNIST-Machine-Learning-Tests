@@ -20,14 +20,16 @@ MainWindow::MainWindow(QWidget *parent)
         exit(10);
 
     net = new Net("784_INPUT_LAYER,"
-                  "1024_SUM_TANH,"
-                  "1024_SUM_TANH,"
+                  "256_SUM_TANH,"
+//                  "100_SUM_TANH,"
                   "010_SUM_SMAX",
                   0.025);
 
     running = false;
     index = 0;
 }
+
+
 
 
 
@@ -109,10 +111,18 @@ void MainWindow::on_pushButtonStart_clicked()
             else
                 values[i] = 0.01;
         }
-        net->backProp(values, ui->doubleSpinBoxLearnRate->value(), ui->doubleSpinBox_Monumentum->value());
+        net->backProp(values, ui->doubleSpinBoxLearnRate->value(), ui->doubleSpinBox_Monumentum->value(), ui->spinBoxBatchSize->value() > 0);
+        if(ui->spinBoxBatchSize->value() > 0 && index % ui->spinBoxBatchSize->value() == 0)
+            net->applyBatch();
 
         if(!(index%100)){
-            ui->label_errorrrate->setText(QString::number(net->recentAverrageError()));
+            double error = 0.0;
+            for(int i = bpt.m_workers.size() - 1; i >= 0; --i)
+                if(!bpt.m_workers.at(i)->isRunning()) {
+                    error = 100.0 - bpt.m_workers.at(i)->getErrorRate() * 100.0;
+                    break;
+                }
+            ui->label_errorrrate->setText(QString::number(error) + "%");
             QApplication::processEvents();
         }
         if(index % 500 == 0) {
@@ -124,7 +134,6 @@ void MainWindow::on_pushButtonStart_clicked()
 
         QApplication::processEvents();
     }
-
 
     delete[] values;
 }

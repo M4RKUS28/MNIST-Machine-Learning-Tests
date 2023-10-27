@@ -43,10 +43,10 @@ public:
 
     bool test(int id, Net * net, DataSetLoader * dataSets, bool useTrainData = false);
     int isOverfitting();
+    std::vector<BackPropTrainerWorker *> m_workers;
 
 private:
 
-    std::vector<BackPropTrainerWorker *> m_workers;
 
 };
 

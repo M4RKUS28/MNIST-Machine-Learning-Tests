@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.0
+** Created by: Qt User Interface Compiler version 6.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -21,6 +21,7 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QSpinBox>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
@@ -50,6 +51,8 @@ public:
     QDoubleSpinBox *doubleSpinBoxLearnRate;
     QLabel *label_4;
     QDoubleSpinBox *doubleSpinBox_Monumentum;
+    QLabel *label_6;
+    QSpinBox *spinBoxBatchSize;
     QSpacerItem *verticalSpacer_4;
     QFrame *line_4;
     QPushButton *pushButton_save;
@@ -162,9 +165,9 @@ public:
 
         doubleSpinBoxLearnRate = new QDoubleSpinBox(groupBox);
         doubleSpinBoxLearnRate->setObjectName("doubleSpinBoxLearnRate");
-        doubleSpinBoxLearnRate->setDecimals(4);
+        doubleSpinBoxLearnRate->setDecimals(6);
         doubleSpinBoxLearnRate->setSingleStep(0.010000000000000);
-        doubleSpinBoxLearnRate->setValue(0.200000000000000);
+        doubleSpinBoxLearnRate->setValue(0.000500000000000);
 
         verticalLayout->addWidget(doubleSpinBoxLearnRate);
 
@@ -177,8 +180,21 @@ public:
         doubleSpinBox_Monumentum->setObjectName("doubleSpinBox_Monumentum");
         doubleSpinBox_Monumentum->setDecimals(4);
         doubleSpinBox_Monumentum->setSingleStep(0.010000000000000);
+        doubleSpinBox_Monumentum->setValue(0.600000000000000);
 
         verticalLayout->addWidget(doubleSpinBox_Monumentum);
+
+        label_6 = new QLabel(groupBox);
+        label_6->setObjectName("label_6");
+
+        verticalLayout->addWidget(label_6);
+
+        spinBoxBatchSize = new QSpinBox(groupBox);
+        spinBoxBatchSize->setObjectName("spinBoxBatchSize");
+        spinBoxBatchSize->setMaximum(9999);
+        spinBoxBatchSize->setValue(64);
+
+        verticalLayout->addWidget(spinBoxBatchSize);
 
         verticalSpacer_4 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
@@ -252,10 +268,11 @@ public:
         groupBox->setTitle(QCoreApplication::translate("MainWindow", "-", nullptr));
         label_5->setText(QCoreApplication::translate("MainWindow", "Durchlauf:", nullptr));
         label_iteration->setText(QCoreApplication::translate("MainWindow", "0", nullptr));
-        label_3->setText(QCoreApplication::translate("MainWindow", "Error Rate:", nullptr));
+        label_3->setText(QCoreApplication::translate("MainWindow", "Accuracy:", nullptr));
         label_errorrrate->setText(QCoreApplication::translate("MainWindow", "-", nullptr));
         label_2->setText(QCoreApplication::translate("MainWindow", "LearnRate", nullptr));
         label_4->setText(QCoreApplication::translate("MainWindow", "Monumentum:", nullptr));
+        label_6->setText(QCoreApplication::translate("MainWindow", "BatchSize:", nullptr));
         pushButton_save->setText(QCoreApplication::translate("MainWindow", "save", nullptr));
         pushButton_load->setText(QCoreApplication::translate("MainWindow", "load", nullptr));
         pushButtonStart->setText(QCoreApplication::translate("MainWindow", "start", nullptr));
