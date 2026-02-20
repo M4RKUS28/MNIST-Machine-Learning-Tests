@@ -1,46 +1,59 @@
 #ifndef DATASETLOADER_H
 #define DATASETLOADER_H
 
-#include <QString>
-#include <QImage>
 #include <QFile>
+#include <QImage>
+#include <QString>
+
+#include <memory>
+#include <random>
 #include <vector>
-#include <ctime>
 
+/**
+ * @brief A single MNIST sample: image data + label.
+ */
+struct Sample {
+  Sample(unsigned cols, unsigned rows);
+  ~Sample() = default;
 
-struct Data
-{
-    Data(const int &numCols, const int &numRows);
-    ~Data();
+  // Non-copyable (owns image data)
+  Sample(const Sample &) = delete;
+  Sample &operator=(const Sample &) = delete;
 
-    QImage * img;
-    double * img_d;
-    unsigned num;
+  std::unique_ptr<double[]> pixels;
+  std::unique_ptr<QImage> image;
+  unsigned label = 0;
+  unsigned width = 0;
+  unsigned height = 0;
 };
 
-
-class DataSetLoader
-{
+/**
+ * @brief Loads MNIST training and test datasets from IDX binary files.
+ */
+class DataSetLoader {
 public:
-    DataSetLoader();
-    ~DataSetLoader();
+  DataSetLoader();
+  ~DataSetLoader() = default;
 
-    bool loadSets(QString dirpath);
+  bool loadSets(const QString &dirPath);
 
-    std::vector<Data *> * trainData() const;
-    std::vector<Data *> * testData() const;
+  const std::vector<std::unique_ptr<Sample>> &trainData() const {
+    return m_trainData;
+  }
+  const std::vector<std::unique_ptr<Sample>> &testData() const {
+    return m_testData;
+  }
 
-    Data *randomTrainData(int min = 0, int max = -1);
+  Sample *randomTrainSample(int minIdx = 0, int maxIdx = -1);
 
 private:
-    std::vector<Data *> * m_trainData;
-    std::vector<Data *> * m_testData;
+  void readImages(QFile &file, std::vector<std::unique_ptr<Sample>> &data);
+  void readLabels(QFile &file, std::vector<std::unique_ptr<Sample>> &data);
 
-    void readImages(QFile& file, std::vector<Data *>* data);
-    void readLabels(QFile& file, std::vector<Data *>* data);
-    unsigned char readByte(QFile& file);
-    unsigned int readInt32(QFile& file);
+  std::vector<std::unique_ptr<Sample>> m_trainData;
+  std::vector<std::unique_ptr<Sample>> m_testData;
 
+  std::mt19937 rng{std::random_device{}()};
 };
 
 #endif // DATASETLOADER_H

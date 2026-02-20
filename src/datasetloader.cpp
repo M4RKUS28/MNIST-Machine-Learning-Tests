@@ -1,163 +1,105 @@
 #include "datasetloader.h"
 
-#include <cstdlib>
-#include <ctime>
-
-#include "qdebug.h"
+#include <QDataStream>
 #include <QDebug>
 
-#include "backproptrainer.cpp"
+// ---------------------------------------------------------------------------
+// Sample
+// ---------------------------------------------------------------------------
 
+Sample::Sample(unsigned cols, unsigned rows)
+    : pixels(std::make_unique<double[]>(cols * rows)),
+      image(std::make_unique<QImage>(cols, rows, QImage::Format_Grayscale8)),
+      width(cols), height(rows) {}
 
-Data::Data(const int & numCols, const int & numRows)
-{
-    img_d = new double[numCols * numRows];
-    img = new QImage(numCols, numRows, QImage::Format_Grayscale8);
-    num = 0;
+// ---------------------------------------------------------------------------
+// DataSetLoader
+// ---------------------------------------------------------------------------
 
+DataSetLoader::DataSetLoader() = default;
+
+bool DataSetLoader::loadSets(const QString &dirPath) {
+  QFile trainImagesFile(dirPath + "/train-images.idx3-ubyte");
+  QFile trainLabelsFile(dirPath + "/train-labels.idx1-ubyte");
+  QFile testImagesFile(dirPath + "/t10k-images.idx3-ubyte");
+  QFile testLabelsFile(dirPath + "/t10k-labels.idx1-ubyte");
+
+  if (!trainImagesFile.open(QIODevice::ReadOnly) ||
+      !trainLabelsFile.open(QIODevice::ReadOnly) ||
+      !testImagesFile.open(QIODevice::ReadOnly) ||
+      !testLabelsFile.open(QIODevice::ReadOnly)) {
+    qDebug() << "Failed to open dataset files:"
+             << trainImagesFile.errorString();
+    return false;
+  }
+
+  readImages(trainImagesFile, m_trainData);
+  readLabels(trainLabelsFile, m_trainData);
+  readImages(testImagesFile, m_testData);
+  readLabels(testLabelsFile, m_testData);
+
+  trainImagesFile.close();
+  trainLabelsFile.close();
+  testImagesFile.close();
+  testLabelsFile.close();
+
+  return true;
 }
 
-Data::~Data()
-{
-    delete[] img_d;
-    delete img;
+Sample *DataSetLoader::randomTrainSample(int minIdx, int maxIdx) {
+  if (m_trainData.empty())
+    return nullptr;
+
+  int maxBound = (maxIdx < 0) ? static_cast<int>(m_trainData.size()) : maxIdx;
+  if (minIdx < 0 || minIdx >= static_cast<int>(m_trainData.size()) ||
+      maxBound <= minIdx)
+    return nullptr;
+
+  std::uniform_int_distribution<int> dist(minIdx, maxBound - 1);
+  return m_trainData[dist(rng)].get();
 }
 
+void DataSetLoader::readImages(QFile &file,
+                               std::vector<std::unique_ptr<Sample>> &data) {
+  QDataStream in(&file);
+  in.setByteOrder(QDataStream::BigEndian);
 
-DataSetLoader::DataSetLoader()
-{
-    // Initialize random seed
-    std::srand(std::time(0));
-    m_trainData = new std::vector<Data *>();
-    m_testData = new std::vector<Data *>();
+  quint32 magicNumber, numImages, numRows, numCols;
+  in >> magicNumber >> numImages >> numRows >> numCols;
 
-}
+  qDebug() << "Magic:" << magicNumber << "Images:" << numImages << "->"
+           << numRows << "x" << numCols;
 
-DataSetLoader::~DataSetLoader()
-{
-    for(auto data : *trainData())
-        delete data;
-    for(auto data : *testData())
-        delete data;
+  for (quint32 i = 0; i < numImages; ++i) {
+    auto sample = std::make_unique<Sample>(numCols, numRows);
 
+    for (quint32 y = 0; y < numRows; ++y) {
+      for (quint32 x = 0; x < numCols; ++x) {
+        quint8 pixelValue;
+        in >> pixelValue;
 
-    delete m_trainData;
-    delete m_testData;
-}
-
-
-bool DataSetLoader::loadSets(QString dirpath)
-{
-    QString trainImagesPath = dirpath + "/train-images.idx3-ubyte";
-    QString trainLabelsPath = dirpath + "/train-labels.idx1-ubyte";
-    QString testImagesPath = dirpath + "/t10k-images.idx3-ubyte";
-    QString testLabelsPath = dirpath + "/t10k-labels.idx1-ubyte";
-
-    QFile trainImagesFile(trainImagesPath);
-    QFile trainLabelsFile(trainLabelsPath);
-    QFile testImagesFile(testImagesPath);
-    QFile testLabelsFile(testLabelsPath);
-
-    if (trainImagesFile.open(QIODevice::ReadOnly) && trainLabelsFile.open(QIODevice::ReadOnly) &&
-        testImagesFile.open(QIODevice::ReadOnly) && testLabelsFile.open(QIODevice::ReadOnly)) {
-
-        readImages(trainImagesFile, m_trainData);
-        readLabels(trainLabelsFile, m_trainData);
-        readImages(testImagesFile, m_testData);
-        readLabels(testLabelsFile, m_testData);
-
-        trainImagesFile.close();
-        trainLabelsFile.close();
-        testImagesFile.close();
-        testLabelsFile.close();
-    } else {
-        qDebug() << ("Open file failed: " + trainImagesFile.errorString());
-        return false;
-    }
-    return true;
-}
-
-std::vector<Data *> *DataSetLoader::trainData() const
-{
-    return m_trainData;
-}
-
-std::vector<Data *> *DataSetLoader::testData() const
-{
-    return m_testData;
-}
-
-Data *DataSetLoader::randomTrainData(int min, int max)
-{
-    if (max <= -1)
-        max = m_trainData->size();  // Wenn max -1 ist, setzen wir max auf die Größe des Vektors
-
-    if (min < 0 || min >= (int)m_trainData->size() || max <= min) {
-        return nullptr;  // Ungültige Argumente
+        sample->pixels[y * numCols + x] =
+            static_cast<double>(pixelValue) / 255.0;
+        quint8 inverted = 255 - pixelValue;
+        sample->image->setPixel(x, y, qRgb(inverted, inverted, inverted));
+      }
     }
 
-    int randomIndex = std::rand() % (max - min) + min;  // Zufälliger Index zwischen min und max
-
-    return m_trainData->at(randomIndex);
-
+    data.push_back(std::move(sample));
+  }
 }
 
-void DataSetLoader::readImages(QFile& file, std::vector<Data *>* data)
-{
-    QDataStream in(&file);
-    in.setByteOrder(QDataStream::BigEndian);
+void DataSetLoader::readLabels(QFile &file,
+                               std::vector<std::unique_ptr<Sample>> &data) {
+  QDataStream in(&file);
+  in.setByteOrder(QDataStream::BigEndian);
 
-    quint32 magicNumber;
-    in >> magicNumber;
-    quint32 numImages;
-    in >> numImages;
-    quint32 numRows;
-    in >> numRows;
-    quint32 numCols;
-    in >> numCols;
+  quint32 magicNumber, numLabels;
+  in >> magicNumber >> numLabels;
 
-    qDebug( ) << "magicNumber" << magicNumber << " numImages: " << numImages << " -> " << numRows << " * " << numCols;
-
-    for(unsigned int i = 0; i < numImages; ++i)
-    {
-        Data * newData = new Data(numCols, numRows);
-
-        for(unsigned int y = 0; y < numRows; ++y)
-        {
-            for(unsigned int x = 0; x < numCols; ++x)
-            {
-                quint8 pixelValue;
-                in >> pixelValue;
-
-                newData->img_d[y * 28 + x] = static_cast<double>(pixelValue) / 255.0;
-                pixelValue = 255 - pixelValue;
-                newData->img->setPixel(x, y, qRgb(pixelValue, pixelValue, pixelValue));
-            }
-        }
-
-        data->push_back(newData);
-    }
-
+  for (quint32 i = 0; i < numLabels; ++i) {
+    quint8 label;
+    in >> label;
+    data[i]->label = label;
+  }
 }
-
-void DataSetLoader::readLabels(QFile& file, std::vector<Data *> *data)
-{
-    QDataStream in(&file);
-    in.setByteOrder(QDataStream::BigEndian);
-
-    quint32 magicNumber;
-    in >> magicNumber;
-    quint32 numLabels;
-    in >> numLabels;
-
-    for(unsigned int i = 0; i < numLabels; ++i)
-    {
-        quint8 label;
-        in >> label;
-        data->at(i)->num = label;
-    }
-}
-
-
-
-

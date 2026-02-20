@@ -1,158 +1,163 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <QPixmap>
-#include <unistd.h>
-#include <QApplication>
-#include <iostream>
 #include "backproptrainer.h"
+#include "datasetloader.h"
+#include "net.h"
 
+#include <QApplication>
+#include <QPixmap>
 
+#include <iostream>
 
+// ---------------------------------------------------------------------------
+// Construction / Destruction
+// ---------------------------------------------------------------------------
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-{
-    ui->setupUi(this);
-    dataSets = new DataSetLoader();
-    if(!dataSets->loadSets("./dataset"))
-        exit(10);
+    : QMainWindow(parent), ui(new Ui::MainWindow),
+      dataSets(std::make_unique<DataSetLoader>()),
+      net(std::make_unique<Net>("784_INPUT_LAYER,"
+                                "256_SUM_TANH,"
+                                "010_SUM_SMAX",
+                                0.025)) {
+  ui->setupUi(this);
 
-    net = new Net("784_INPUT_LAYER,"
-                  "256_SUM_TANH,"
-//                  "100_SUM_TANH,"
-                  "010_SUM_SMAX",
-                  0.025);
-
-    running = false;
-    index = 0;
+  if (!dataSets->loadSets("./dataset")) {
+    std::cerr << "Failed to load MNIST dataset from ./dataset" << std::endl;
+  }
 }
 
-
-
-
-
-MainWindow::~MainWindow()
-{
-    running = false;
-    delete ui;
-    delete dataSets;
+MainWindow::~MainWindow() {
+  running = false;
+  delete ui;
+  // dataSets and net cleaned up by unique_ptr
 }
 
+// ---------------------------------------------------------------------------
+// Training
+// ---------------------------------------------------------------------------
 
-void MainWindow::on_pushButtonStart_clicked()
-{
-    if(running)
-        return;
-    running = true;
+static constexpr int NUM_DIGITS = 10;
+static constexpr unsigned TRAIN_SET_SIZE = 60000;
+static constexpr unsigned EPOCH_LOG_INTERVAL = TRAIN_SET_SIZE;
+static constexpr unsigned UI_UPDATE_INTERVAL = 500;
+static constexpr unsigned TEST_INTERVAL = 500;
+static constexpr unsigned TRAIN_TEST_INTERVAL = 3000;
+static constexpr unsigned ERROR_DISPLAY_INTERVAL = 100;
 
-    double* values = new double[10];
-    BackPropTrainer bpt;
-    BackPropTrainer bpt_td;
+void MainWindow::on_pushButtonStart_clicked() {
+  if (running)
+    return;
+  running = true;
 
-    QFile out1(((true) ? "train_values.txt" : "test_values.txt"));
-    out1.open(QFile::OpenMode::enum_type::ReadWrite | QFile::OpenMode::enum_type::Append);
-    out1.write( QString("New Training...\n").toStdString().c_str());
-    out1.close();
+  double values[NUM_DIGITS];
+  BackPropTrainer testEvaluator;
+  BackPropTrainer trainEvaluator;
 
-    QFile out2(((false) ? "train_values.txt" : "test_values.txt"));
-    out2.open(QFile::OpenMode::enum_type::ReadWrite | QFile::OpenMode::enum_type::Append);
-    out2.write( QString("New Training...\n").toStdString().c_str());
-    out2.close();
+  // Log start of new training session
+  for (const char *filename : {"train_values.txt", "test_values.txt"}) {
+    QFile out(filename);
+    if (out.open(QIODevice::ReadWrite | QIODevice::Append)) {
+      out.write("New Training...\n");
+      out.close();
+    }
+  }
 
-    for(; index < 3000000 && running; index++) {
-        if(index % 60000 == 0) {
-            std::cout << "=> Epoch " << index / 60000 << std::endl;
-//            bpt_td.test(index, net, dataSets);
-            QFile out1(((true) ? "train_values.txt" : "test_values.txt"));
-            out1.open(QFile::OpenMode::enum_type::ReadWrite | QFile::OpenMode::enum_type::Append);
-            out1.write( QString("=> Epoch " + QString::number(index / 60000) + "\n").toStdString().c_str());
-            out1.close();
+  for (; trainIndex < 3000000 && running; trainIndex++) {
+    // Epoch boundary logging
+    if (trainIndex % EPOCH_LOG_INTERVAL == 0) {
+      unsigned epoch = trainIndex / EPOCH_LOG_INTERVAL;
+      std::cout << "=> Epoch " << epoch << std::endl;
 
-            QFile out2(((false) ? "train_values.txt" : "test_values.txt"));
-            out2.open(QFile::OpenMode::enum_type::ReadWrite | QFile::OpenMode::enum_type::Append);
-            out2.write( QString("=> Epoch " + QString::number(index / 60000) + "\n").toStdString().c_str());
-            out2.close();
+      for (const char *filename : {"train_values.txt", "test_values.txt"}) {
+        QFile out(filename);
+        if (out.open(QIODevice::ReadWrite | QIODevice::Append)) {
+          out.write(QString("=> Epoch %1\n").arg(epoch).toUtf8());
+          out.close();
         }
-
-        ui->label_iteration->setText(QString::number(index));
-        QApplication::processEvents();
-
-        if(index%500 == 0)
-            bpt.test(index, net, dataSets);
-        if(index%3000 == 0)
-            bpt_td.test(index, net, dataSets, true);
-
-        //train net
-
-        int res_num = -1;
-        double res_val = 0.0;
-
-        Data * e = dataSets->trainData()->at(index % 60000);//->randomTrainData(0, -1);
-        if(index % 500 == 0) {
-            ui->label->setPixmap(QPixmap::fromImage( e->img->scaled(280, 280) ));
-            ui->label->update();
-            QApplication::processEvents();
-        }
-
-        net->feedForward(e->img_d);
-        net->getResults(values);
-        for(int i = 0; i < 10; i++) {
-            if(values[i] > res_val) {
-                res_val = values[i];
-                res_num = i;
-            }
-        }
-
-        for(unsigned i = 0; i < 10; i++) {
-            if(i == e->num)
-                values[i] = 0.99;
-            else
-                values[i] = 0.01;
-        }
-        net->backProp(values, ui->doubleSpinBoxLearnRate->value(), ui->doubleSpinBox_Monumentum->value(), ui->spinBoxBatchSize->value() > 0);
-        if(ui->spinBoxBatchSize->value() > 0 && index % ui->spinBoxBatchSize->value() == 0)
-            net->applyBatch();
-
-        if(!(index%100)){
-            double error = 0.0;
-            for(int i = bpt.m_workers.size() - 1; i >= 0; --i)
-                if(!bpt.m_workers.at(i)->isRunning()) {
-                    error = 100.0 - bpt.m_workers.at(i)->getErrorRate() * 100.0;
-                    break;
-                }
-            ui->label_errorrrate->setText(QString::number(error) + "%");
-            QApplication::processEvents();
-        }
-        if(index % 500 == 0) {
-            ui->label_num->setText(QString::number(res_num));
-            ui->label_num_cor->setText(QString::number(e->num));
-
-            QApplication::processEvents();
-        }
-
-        QApplication::processEvents();
+      }
     }
 
-    delete[] values;
+    // Update iteration counter in UI
+    ui->label_iteration->setText(QString::number(trainIndex));
+    QApplication::processEvents();
+
+    // Launch accuracy evaluations periodically
+    if (trainIndex % TEST_INTERVAL == 0)
+      testEvaluator.test(trainIndex, net.get(), dataSets.get());
+    if (trainIndex % TRAIN_TEST_INTERVAL == 0)
+      trainEvaluator.test(trainIndex, net.get(), dataSets.get(), true);
+
+    // Get training sample
+    const auto &trainData = dataSets->trainData();
+    Sample *sample = trainData[trainIndex % TRAIN_SET_SIZE].get();
+
+    // Show sample image periodically
+    if (trainIndex % UI_UPDATE_INTERVAL == 0) {
+      ui->label->setPixmap(QPixmap::fromImage(sample->image->scaled(280, 280)));
+      ui->label->update();
+      QApplication::processEvents();
+    }
+
+    // Forward pass
+    net->feedForward(sample->pixels.get());
+    net->getResults(values);
+
+    // Find predicted digit
+    int predicted = -1;
+    double maxVal = 0.0;
+    for (int i = 0; i < NUM_DIGITS; i++) {
+      if (values[i] > maxVal) {
+        maxVal = values[i];
+        predicted = i;
+      }
+    }
+
+    // Create target vector (one-hot with 0.99 / 0.01)
+    for (int i = 0; i < NUM_DIGITS; i++)
+      values[i] = (static_cast<unsigned>(i) == sample->label) ? 0.99 : 0.01;
+
+    // Backpropagation
+    double eta = ui->doubleSpinBoxLearnRate->value();
+    double alpha = ui->doubleSpinBox_Monumentum->value();
+    int batchSize = ui->spinBoxBatchSize->value();
+    net->backProp(values, eta, alpha, batchSize > 0);
+
+    if (batchSize > 0 && trainIndex % static_cast<unsigned>(batchSize) == 0)
+      net->applyBatch();
+
+    // Update accuracy display
+    if (trainIndex % ERROR_DISPLAY_INTERVAL == 0) {
+      const auto &workers = testEvaluator.workers();
+      for (int i = static_cast<int>(workers.size()) - 1; i >= 0; --i) {
+        if (!workers[i]->isRunning()) {
+          double accuracy = 100.0 - workers[i]->getErrorRate() * 100.0;
+          ui->label_errorrrate->setText(QString::number(accuracy, 'f', 2) +
+                                        "%");
+          break;
+        }
+      }
+      QApplication::processEvents();
+    }
+
+    // Update prediction display
+    if (trainIndex % UI_UPDATE_INTERVAL == 0) {
+      ui->label_num->setText(QString::number(predicted));
+      ui->label_num_cor->setText(QString::number(sample->label));
+      QApplication::processEvents();
+    }
+
+    QApplication::processEvents();
+  }
 }
 
+// ---------------------------------------------------------------------------
+// Save / Load
+// ---------------------------------------------------------------------------
 
-void MainWindow::on_pushButton_save_clicked()
-{
-    net->save_to("mynet.csv");
-}
+void MainWindow::on_pushButton_save_clicked() { net->saveTo("mynet.csv"); }
 
+void MainWindow::on_pushButton_load_clicked() { net->loadFrom("mynet.csv"); }
 
-void MainWindow::on_pushButton_load_clicked()
-{
-    net->load_from("mynet.csv");
-}
-
-
-void MainWindow::on_pushButton_stop_clicked()
-{
-    running = false;
-}
-
+void MainWindow::on_pushButton_stop_clicked() { running = false; }

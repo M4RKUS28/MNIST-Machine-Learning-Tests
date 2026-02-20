@@ -1,53 +1,78 @@
 #ifndef BACKPROPTRAINER_H
 #define BACKPROPTRAINER_H
 
-
-
+#include "datasetloader.h"
 #include "net.h"
+
+#include <atomic>
+#include <memory>
 #include <mutex>
 #include <thread>
-#include "datasetloader.h"
+#include <vector>
 
-
-class BackPropTrainerWorker
-{
+/**
+ * @brief Worker that evaluates a network copy on a dataset in a background
+ * thread.
+ *
+ * Each worker owns a copy of the network and computes classification
+ * accuracy on either the training or test set.
+ */
+class BackPropTrainerWorker {
 public:
-    BackPropTrainerWorker(const int &id, const Net * net, bool useTrainData);
-    ~BackPropTrainerWorker();
+  BackPropTrainerWorker(int id, const Net *net, bool useTrainData);
+  ~BackPropTrainerWorker();
 
-    bool start( DataSetLoader * dataSets);
-    double getErrorRate();
-    bool isRunning();
-    void setErrorRate(const double &value);
-    void setRunningStatus(const bool &isRunning);
-    Net *getNet_copy();
+  // Non-copyable (owns thread + net copy)
+  BackPropTrainerWorker(const BackPropTrainerWorker &) = delete;
+  BackPropTrainerWorker &operator=(const BackPropTrainerWorker &) = delete;
 
-    int id;
+  bool start(DataSetLoader *dataSets);
+
+  double getErrorRate() const;
+  bool isRunning() const;
+
+  int getId() const { return m_id; }
+  Net *getNetCopy();
+
 private:
-    static void run(BackPropTrainerWorker *_this, DataSetLoader * dataSets, bool useTrainData);
-    double error_rate;
-    bool is_running;
-    std::thread m_thread;
-    std::mutex obj_lock;
-    Net * net_copy;
-    bool useTrainData;
+  void setErrorRate(double value);
+  void setRunningStatus(bool running);
+
+  static void run(BackPropTrainerWorker *self, DataSetLoader *dataSets,
+                  bool useTrainData);
+
+  int m_id;
+  double m_errorRate = 0.0;
+  bool m_running = false;
+  bool m_useTrainData;
+  std::thread m_thread;
+  mutable std::mutex m_mutex;
+  std::unique_ptr<Net> m_netCopy;
 };
 
-
-
-class BackPropTrainer
-{
+/**
+ * @brief Manages multiple BackPropTrainerWorker instances for parallel
+ * evaluation.
+ */
+class BackPropTrainer {
 public:
-    BackPropTrainer();
-    ~BackPropTrainer();
+  BackPropTrainer() = default;
+  ~BackPropTrainer() = default;
 
-    bool test(int id, Net * net, DataSetLoader * dataSets, bool useTrainData = false);
-    int isOverfitting();
-    std::vector<BackPropTrainerWorker *> m_workers;
+  bool test(int id, Net *net, DataSetLoader *dataSets,
+            bool useTrainData = false);
+
+  /**
+   * @brief Heuristic overfitting check by counting sequential error increases.
+   */
+  int isOverfitting() const;
+
+  const std::vector<std::unique_ptr<BackPropTrainerWorker>> &workers() const {
+    return m_workers;
+  }
 
 private:
-
-
+  std::vector<std::unique_ptr<BackPropTrainerWorker>> m_workers;
 };
 
 #endif // BACKPROPTRAINER_H

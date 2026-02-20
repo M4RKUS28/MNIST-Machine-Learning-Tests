@@ -27,8 +27,8 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-INCLUDEPATH += $$PWD/../GenNet
-DEPENDPATH += $$PWD/../GenNet
+INCLUDEPATH += $$PWD/../GenNet/src
+DEPENDPATH += $$PWD/../GenNet/src
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../GenNet/release/ -lGenNet
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../GenNet/debug/ -lGenNet
