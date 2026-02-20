@@ -5,7 +5,6 @@
 
 #include "qdebug.h"
 #include <QDebug>
-#include <fstream>
 
 #include "backproptrainer.cpp"
 

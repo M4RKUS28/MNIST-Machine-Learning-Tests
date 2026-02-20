@@ -9,18 +9,18 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    backproptrainer.cpp \
-    datasetloader.cpp \
-    main.cpp \
-    mainwindow.cpp
+    src/backproptrainer.cpp \
+    src/datasetloader.cpp \
+    src/main.cpp \
+    src/mainwindow.cpp
 
 HEADERS += \
-    backproptrainer.h \
-    datasetloader.h \
-    mainwindow.h
+    src/backproptrainer.h \
+    src/datasetloader.h \
+    src/mainwindow.h
 
 FORMS += \
-    mainwindow.ui
+    src/mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
