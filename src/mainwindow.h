@@ -39,6 +39,7 @@ private slots:
   void on_pushButton_save_clicked();
   void on_pushButton_load_clicked();
   void on_pushButtonEditArch_clicked();
+  void on_pushButtonReset_clicked();
 
 private:
   void setupChart();

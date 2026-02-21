@@ -274,6 +274,33 @@ void MainWindow::on_pushButton_save_clicked() { net->saveTo("mynet.csv"); }
 
 void MainWindow::on_pushButton_load_clicked() { net->loadFrom("mynet.csv"); }
 
+void MainWindow::on_pushButtonReset_clicked() {
+  if (running)
+    return;
+
+  // Recreate network with same topology (reinitialises weights)
+  net = std::make_unique<Net>(net->getTopologyStr(), 0.025);
+
+  // Reset chart
+  testAccuracySeries->clear();
+  trainAccuracySeries->clear();
+  testAccuracySeries->append(0, 0);
+  trainAccuracySeries->append(0, 0);
+  axisX->setRange(0, 10000);
+
+  // Reset counters
+  trainIndex = 0;
+  ui->labelIteration->setText("0");
+  ui->labelEpoch->setText("0");
+  ui->labelAccuracy->setText("-");
+
+  // Update architecture label
+  ui->labelArchitecture->setText(
+      QString::fromStdString(net->getTopologyStr()).replace(',', '\n'));
+
+  std::cout << "Network reset" << std::endl;
+}
+
 void MainWindow::on_pushButtonEditArch_clicked() {
   if (running)
     return;
