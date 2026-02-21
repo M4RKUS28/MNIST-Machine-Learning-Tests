@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 6.6.1
+** Created by: Qt User Interface Compiler version 6.9.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -115,7 +115,7 @@ public:
         groupBox->setObjectName("groupBox");
         verticalLayout = new QVBoxLayout(groupBox);
         verticalLayout->setObjectName("verticalLayout");
-        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         verticalLayout->addItem(verticalSpacer);
 
@@ -131,8 +131,8 @@ public:
 
         line = new QFrame(groupBox);
         line->setObjectName("line");
-        line->setFrameShape(QFrame::HLine);
-        line->setFrameShadow(QFrame::Sunken);
+        line->setFrameShape(QFrame::Shape::HLine);
+        line->setFrameShadow(QFrame::Shadow::Sunken);
 
         verticalLayout->addWidget(line);
 
@@ -143,7 +143,7 @@ public:
 
         label_errorrrate = new QLabel(groupBox);
         label_errorrrate->setObjectName("label_errorrrate");
-        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(label_errorrrate->sizePolicy().hasHeightForWidth());
@@ -153,8 +153,8 @@ public:
 
         line_2 = new QFrame(groupBox);
         line_2->setObjectName("line_2");
-        line_2->setFrameShape(QFrame::HLine);
-        line_2->setFrameShadow(QFrame::Sunken);
+        line_2->setFrameShape(QFrame::Shape::HLine);
+        line_2->setFrameShadow(QFrame::Shadow::Sunken);
 
         verticalLayout->addWidget(line_2);
 
@@ -196,14 +196,14 @@ public:
 
         verticalLayout->addWidget(spinBoxBatchSize);
 
-        verticalSpacer_4 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        verticalSpacer_4 = new QSpacerItem(20, 20, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         verticalLayout->addItem(verticalSpacer_4);
 
         line_4 = new QFrame(groupBox);
         line_4->setObjectName("line_4");
-        line_4->setFrameShape(QFrame::HLine);
-        line_4->setFrameShadow(QFrame::Sunken);
+        line_4->setFrameShape(QFrame::Shape::HLine);
+        line_4->setFrameShadow(QFrame::Shadow::Sunken);
 
         verticalLayout->addWidget(line_4);
 
@@ -217,14 +217,14 @@ public:
 
         verticalLayout->addWidget(pushButton_load);
 
-        verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Fixed);
 
         verticalLayout->addItem(verticalSpacer_2);
 
         line_5 = new QFrame(groupBox);
         line_5->setObjectName("line_5");
-        line_5->setFrameShape(QFrame::HLine);
-        line_5->setFrameShadow(QFrame::Sunken);
+        line_5->setFrameShape(QFrame::Shape::HLine);
+        line_5->setFrameShadow(QFrame::Shadow::Sunken);
 
         verticalLayout->addWidget(line_5);
 
@@ -238,7 +238,7 @@ public:
 
         verticalLayout->addWidget(pushButton_stop);
 
-        verticalSpacer_3 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        verticalSpacer_3 = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         verticalLayout->addItem(verticalSpacer_3);
 

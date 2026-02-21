@@ -6,22 +6,66 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1139</width>
-    <height>804</height>
+    <width>1200</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>TANH</string>
+   <string>MNIST-Net</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="spacing">
+     <number>8</number>
+    </property>
+    <property name="leftMargin">
+     <number>6</number>
+    </property>
+    <property name="topMargin">
+     <number>6</number>
+    </property>
+    <property name="rightMargin">
+     <number>6</number>
+    </property>
+    <property name="bottomMargin">
+     <number>6</number>
+    </property>
     <item>
-     <widget class="QGraphicsView" name="graphicsView"/>
+     <widget class="QWidget" name="chartPlaceholder" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>3</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>400</width>
+        <height>300</height>
+       </size>
+      </property>
+     </widget>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="sampleLayout">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
-       <widget class="QLabel" name="label">
+       <spacer name="sampleTopSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelSampleImage">
         <property name="minimumSize">
          <size>
           <width>280</width>
@@ -34,8 +78,11 @@
           <height>280</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>Current training sample image (28x28 scaled to 280x280)</string>
+        </property>
         <property name="text">
-         <string>TextLabel</string>
+         <string/>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -43,15 +90,18 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_num">
+       <widget class="QLabel" name="labelPredicted">
         <property name="font">
          <font>
           <pointsize>40</pointsize>
           <bold>true</bold>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Predicted digit by the neural network</string>
+        </property>
         <property name="text">
-         <string>0</string>
+         <string>-</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -59,76 +109,107 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_num_cor">
+       <widget class="QLabel" name="labelCorrect">
         <property name="font">
          <font>
-          <pointsize>25</pointsize>
+          <pointsize>22</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Ground-truth label from the MNIST dataset</string>
+        </property>
         <property name="text">
-         <string>0</string>
+         <string>-</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
+      <item>
+       <spacer name="sampleBottomSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
      </layout>
     </item>
     <item>
-     <widget class="QGroupBox" name="groupBox">
-      <property name="title">
-       <string>-</string>
+     <widget class="QGroupBox" name="groupBoxControls">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="minimumSize">
+       <size>
+        <width>180</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Training Controls</string>
+      </property>
+      <layout class="QVBoxLayout" name="controlsLayout">
        <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_5">
+        <widget class="QLabel" name="labelIterationHeader">
          <property name="text">
-          <string>Durchlauf:</string>
+          <string>Iteration:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_iteration">
+        <widget class="QLabel" name="labelIteration">
+         <property name="font">
+          <font>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Current training iteration count</string>
+         </property>
          <property name="text">
           <string>0</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="Line" name="line">
+        <widget class="Line" name="line1">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_3">
+        <widget class="QLabel" name="labelAccuracyHeader">
          <property name="text">
           <string>Accuracy:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_errorrrate">
+        <widget class="QLabel" name="labelAccuracy">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Latest test accuracy on the MNIST test set</string>
          </property>
          <property name="text">
           <string>-</string>
@@ -136,21 +217,24 @@
         </widget>
        </item>
        <item>
-        <widget class="Line" name="line_2">
+        <widget class="Line" name="line2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="labelLearnRateHeader">
          <property name="text">
-          <string>LearnRate</string>
+          <string>Learning Rate:</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QDoubleSpinBox" name="doubleSpinBoxLearnRate">
+         <property name="toolTip">
+          <string>Learning rate controls the step size during gradient descent</string>
+         </property>
          <property name="decimals">
           <number>6</number>
          </property>
@@ -163,14 +247,17 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="labelMomentumHeader">
          <property name="text">
-          <string>Monumentum:</string>
+          <string>Momentum:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QDoubleSpinBox" name="doubleSpinBox_Monumentum">
+        <widget class="QDoubleSpinBox" name="doubleSpinBoxMomentum">
+         <property name="toolTip">
+          <string>Momentum accelerates SGD by accumulating past gradients</string>
+         </property>
          <property name="decimals">
           <number>4</number>
          </property>
@@ -183,14 +270,17 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_6">
+        <widget class="QLabel" name="labelBatchSizeHeader">
          <property name="text">
-          <string>BatchSize:</string>
+          <string>Batch Size:</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QSpinBox" name="spinBoxBatchSize">
+         <property name="toolTip">
+          <string>Mini-batch size for weight updates (0 = online learning)</string>
+         </property>
          <property name="maximum">
           <number>9999</number>
          </property>
@@ -200,23 +290,7 @@
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="Line" name="line_4">
+        <widget class="Line" name="line3">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -224,36 +298,26 @@
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_save">
+         <property name="toolTip">
+          <string>Save network weights to mynet.csv</string>
+         </property>
          <property name="text">
-          <string>save</string>
+          <string>Save</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_load">
+         <property name="toolTip">
+          <string>Load network weights from mynet.csv</string>
+         </property>
          <property name="text">
-          <string>load</string>
+          <string>Load</string>
          </property>
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="Line" name="line_5">
+        <widget class="Line" name="line4">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -261,20 +325,26 @@
        </item>
        <item>
         <widget class="QPushButton" name="pushButtonStart">
+         <property name="toolTip">
+          <string>Start training the neural network</string>
+         </property>
          <property name="text">
-          <string>start</string>
+          <string>Start</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_stop">
+         <property name="toolTip">
+          <string>Stop training after current iteration</string>
+         </property>
          <property name="text">
-          <string>stop</string>
+          <string>Stop</string>
          </property>
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_3">
+        <spacer name="controlsBottomSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -290,16 +360,6 @@
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1139</width>
-     <height>22</height>
-    </rect>
-   </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>

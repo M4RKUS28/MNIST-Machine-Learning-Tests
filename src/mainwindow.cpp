@@ -7,6 +7,12 @@
 
 #include <QApplication>
 #include <QPixmap>
+#include <QVBoxLayout>
+
+#include <QtCharts/QChart>
+#include <QtCharts/QChartView>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QValueAxis>
 
 #include <iostream>
 
@@ -23,15 +29,79 @@ MainWindow::MainWindow(QWidget *parent)
                                 0.025)) {
   ui->setupUi(this);
 
-  if (!dataSets->loadSets("./dataset")) {
-    std::cerr << "Failed to load MNIST dataset from ./dataset" << std::endl;
+  if (!dataSets->loadSets("../dataset")) {
+    std::cerr << "Failed to load MNIST dataset from ../dataset" << std::endl;
   }
+
+  setupChart();
 }
 
 MainWindow::~MainWindow() {
   running = false;
   delete ui;
   // dataSets and net cleaned up by unique_ptr
+  // chart/series owned by chartView (Qt parent-child)
+}
+
+// ---------------------------------------------------------------------------
+// Chart setup
+// ---------------------------------------------------------------------------
+
+void MainWindow::setupChart() {
+  chart = new QChart();
+  chart->setTitle("Training Progress");
+  chart->setAnimationOptions(QChart::NoAnimation);
+
+  // Test accuracy series (blue)
+  testAccuracySeries = new QLineSeries();
+  testAccuracySeries->setName("Test Accuracy");
+  testAccuracySeries->setColor(QColor(41, 128, 185)); // flat blue
+  chart->addSeries(testAccuracySeries);
+
+  // Train accuracy series (orange)
+  trainAccuracySeries = new QLineSeries();
+  trainAccuracySeries->setName("Train Accuracy");
+  trainAccuracySeries->setColor(QColor(230, 126, 34)); // flat orange
+  chart->addSeries(trainAccuracySeries);
+
+  // X axis: iterations
+  axisX = new QValueAxis();
+  axisX->setTitleText("Iteration");
+  axisX->setLabelFormat("%i");
+  axisX->setRange(0, 10000);
+  chart->addAxis(axisX, Qt::AlignBottom);
+  testAccuracySeries->attachAxis(axisX);
+  trainAccuracySeries->attachAxis(axisX);
+
+  // Y axis: accuracy percentage
+  axisY = new QValueAxis();
+  axisY->setTitleText("Accuracy (%)");
+  axisY->setRange(0, 100);
+  axisY->setLabelFormat("%.1f");
+  chart->addAxis(axisY, Qt::AlignLeft);
+  testAccuracySeries->attachAxis(axisY);
+  trainAccuracySeries->attachAxis(axisY);
+
+  // Create chart view and insert into placeholder
+  chartView = new QChartView(chart);
+  chartView->setRenderHint(QPainter::Antialiasing);
+
+  auto *layout = new QVBoxLayout(ui->chartPlaceholder);
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->addWidget(chartView);
+}
+
+void MainWindow::addTestAccuracyPoint(double iteration, double accuracy) {
+  testAccuracySeries->append(iteration, accuracy);
+  // Auto-scale X axis
+  if (iteration > axisX->max())
+    axisX->setMax(iteration * 1.2);
+}
+
+void MainWindow::addTrainAccuracyPoint(double iteration, double accuracy) {
+  trainAccuracySeries->append(iteration, accuracy);
+  if (iteration > axisX->max())
+    axisX->setMax(iteration * 1.2);
 }
 
 // ---------------------------------------------------------------------------
@@ -45,6 +115,7 @@ static constexpr unsigned UI_UPDATE_INTERVAL = 500;
 static constexpr unsigned TEST_INTERVAL = 500;
 static constexpr unsigned TRAIN_TEST_INTERVAL = 3000;
 static constexpr unsigned ERROR_DISPLAY_INTERVAL = 100;
+static constexpr unsigned CHART_UPDATE_INTERVAL = 500;
 
 void MainWindow::on_pushButtonStart_clicked() {
   if (running)
@@ -80,7 +151,7 @@ void MainWindow::on_pushButtonStart_clicked() {
     }
 
     // Update iteration counter in UI
-    ui->label_iteration->setText(QString::number(trainIndex));
+    ui->labelIteration->setText(QString::number(trainIndex));
     QApplication::processEvents();
 
     // Launch accuracy evaluations periodically
@@ -95,8 +166,9 @@ void MainWindow::on_pushButtonStart_clicked() {
 
     // Show sample image periodically
     if (trainIndex % UI_UPDATE_INTERVAL == 0) {
-      ui->label->setPixmap(QPixmap::fromImage(sample->image->scaled(280, 280)));
-      ui->label->update();
+      ui->labelSampleImage->setPixmap(
+          QPixmap::fromImage(sample->image->scaled(280, 280)));
+      ui->labelSampleImage->update();
       QApplication::processEvents();
     }
 
@@ -120,21 +192,31 @@ void MainWindow::on_pushButtonStart_clicked() {
 
     // Backpropagation
     double eta = ui->doubleSpinBoxLearnRate->value();
-    double alpha = ui->doubleSpinBox_Monumentum->value();
+    double alpha = ui->doubleSpinBoxMomentum->value();
     int batchSize = ui->spinBoxBatchSize->value();
     net->backProp(values, eta, alpha, batchSize > 0);
 
     if (batchSize > 0 && trainIndex % static_cast<unsigned>(batchSize) == 0)
       net->applyBatch();
 
-    // Update accuracy display
-    if (trainIndex % ERROR_DISPLAY_INTERVAL == 0) {
-      const auto &workers = testEvaluator.workers();
-      for (int i = static_cast<int>(workers.size()) - 1; i >= 0; --i) {
-        if (!workers[i]->isRunning()) {
-          double accuracy = 100.0 - workers[i]->getErrorRate() * 100.0;
-          ui->label_errorrrate->setText(QString::number(accuracy, 'f', 2) +
-                                        "%");
+    // Update accuracy display and chart
+    if (trainIndex % CHART_UPDATE_INTERVAL == 0) {
+      // Test accuracy
+      const auto &testWorkers = testEvaluator.workers();
+      for (int i = static_cast<int>(testWorkers.size()) - 1; i >= 0; --i) {
+        if (!testWorkers[i]->isRunning()) {
+          double accuracy = 100.0 - testWorkers[i]->getErrorRate() * 100.0;
+          ui->labelAccuracy->setText(QString::number(accuracy, 'f', 2) + "%");
+          addTestAccuracyPoint(trainIndex, accuracy);
+          break;
+        }
+      }
+      // Train accuracy
+      const auto &trainWorkers = trainEvaluator.workers();
+      for (int i = static_cast<int>(trainWorkers.size()) - 1; i >= 0; --i) {
+        if (!trainWorkers[i]->isRunning()) {
+          double accuracy = 100.0 - trainWorkers[i]->getErrorRate() * 100.0;
+          addTrainAccuracyPoint(trainIndex, accuracy);
           break;
         }
       }
@@ -143,8 +225,8 @@ void MainWindow::on_pushButtonStart_clicked() {
 
     // Update prediction display
     if (trainIndex % UI_UPDATE_INTERVAL == 0) {
-      ui->label_num->setText(QString::number(predicted));
-      ui->label_num_cor->setText(QString::number(sample->label));
+      ui->labelPredicted->setText(QString::number(predicted));
+      ui->labelCorrect->setText(QString::number(sample->label));
       QApplication::processEvents();
     }
 
