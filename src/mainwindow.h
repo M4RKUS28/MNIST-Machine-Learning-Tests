@@ -2,16 +2,17 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
-#include <QtCharts/QChartView>
+
 
 #include <memory>
 
 class DataSetLoader;
 class Net;
 
-//QT_CHARTS_USE_NAMESPACE
+// QT_CHARTS_USE_NAMESPACE
 class QLineSeries;
 class QChart;
 class QChartView;
@@ -29,6 +30,9 @@ class MainWindow : public QMainWindow {
 public:
   explicit MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
+
+protected:
+  void closeEvent(QCloseEvent *event) override;
 
 private slots:
   void on_pushButtonStart_clicked();

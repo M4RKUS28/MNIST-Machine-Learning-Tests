@@ -6,6 +6,7 @@
 #include "net.h"
 
 #include <QApplication>
+#include <QCloseEvent>
 #include <QPixmap>
 #include <QVBoxLayout>
 
@@ -253,3 +254,12 @@ void MainWindow::on_pushButton_save_clicked() { net->saveTo("mynet.csv"); }
 void MainWindow::on_pushButton_load_clicked() { net->loadFrom("mynet.csv"); }
 
 void MainWindow::on_pushButton_stop_clicked() { running = false; }
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+  running = false;
+  if (this->running) {
+    net->saveTo("mynet.csv");
+    std::cout << "Auto-saved to mynet.csv" << std::endl;
+  } 
+  QMainWindow::closeEvent(event);
+}
