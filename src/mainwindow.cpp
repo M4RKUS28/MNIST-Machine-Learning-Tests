@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "architecturedialog.h"
 #include "datasetloader.h"
 #include "net.h"
 
@@ -35,8 +36,9 @@ MainWindow::MainWindow(QWidget *parent)
 
   setupChart();
 
-  // Display network architecture
-  ui->labelArchitecture->setText("784 INPUT\n256 TANH\n10 SMAX");
+  // Display network architecture (commas → newlines)
+  ui->labelArchitecture->setText(
+      QString::fromStdString(net->getTopologyStr()).replace(',', '\n'));
 }
 
 MainWindow::~MainWindow() {
@@ -124,10 +126,22 @@ static constexpr unsigned TRAIN_TEST_INTERVAL = 3000;
 static constexpr unsigned ERROR_DISPLAY_INTERVAL = 100;
 static constexpr unsigned CHART_UPDATE_INTERVAL = 500;
 
-void MainWindow::on_pushButtonStart_clicked() {
-  if (running)
+void MainWindow::on_pushButtonStartStop_clicked() {
+  if (running) {
+    // --- STOP pressed ---
+    running = false;
+    ui->pushButtonStartStop->setEnabled(false);
+    ui->pushButtonStartStop->setText("Stopping...");
+    testEvaluator.cancelAll();
+    trainEvaluator.cancelAll();
     return;
+  }
+
+  // --- START pressed ---
   running = true;
+  ui->pushButtonStartStop->setText("Stop");
+  ui->pushButtonStartStop->setToolTip("Stop training after current iteration");
+  ui->pushButtonEditArch->setEnabled(false);
 
   double values[NUM_DIGITS];
   size_t lastPlottedTestIdx = 0;
@@ -244,6 +258,12 @@ void MainWindow::on_pushButtonStart_clicked() {
 
     QApplication::processEvents();
   }
+
+  // Training loop exited — restore button state
+  ui->pushButtonStartStop->setText("Start");
+  ui->pushButtonStartStop->setToolTip("Start training the neural network");
+  ui->pushButtonStartStop->setEnabled(true);
+  ui->pushButtonEditArch->setEnabled(true);
 }
 
 // ---------------------------------------------------------------------------
@@ -254,10 +274,35 @@ void MainWindow::on_pushButton_save_clicked() { net->saveTo("mynet.csv"); }
 
 void MainWindow::on_pushButton_load_clicked() { net->loadFrom("mynet.csv"); }
 
-void MainWindow::on_pushButton_stop_clicked() {
-  running = false;
-  testEvaluator.cancelAll();
-  trainEvaluator.cancelAll();
+void MainWindow::on_pushButtonEditArch_clicked() {
+  if (running)
+    return;
+
+  QString currentTopology = QString::fromStdString(net->getTopologyStr());
+  ArchitectureDialog dlg(currentTopology, this);
+
+  if (dlg.exec() == QDialog::Accepted) {
+    QString newTopology = dlg.topologyString();
+    std::cout << "New topology: " << newTopology.toStdString() << std::endl;
+
+    // Recreate network with new topology
+    net = std::make_unique<Net>(newTopology.toStdString(), 0.025);
+
+    // Update label
+    ui->labelArchitecture->setText(newTopology.replace(',', '\n'));
+
+    // Reset chart
+    testAccuracySeries->clear();
+    trainAccuracySeries->clear();
+    testAccuracySeries->append(0, 0);
+    trainAccuracySeries->append(0, 0);
+    axisX->setRange(0, 10000);
+
+    // Reset training counter
+    trainIndex = 0;
+    ui->labelIteration->setText("0");
+    ui->labelEpoch->setText("0");
+  }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {

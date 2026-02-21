@@ -215,48 +215,60 @@
       </property>
       <layout class="QVBoxLayout" name="controlsLayout">
        <item>
-        <widget class="QLabel" name="labelIterationHeader">
-         <property name="text">
-          <string>Iteration:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelIteration">
-         <property name="font">
-          <font>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Current training iteration count</string>
-         </property>
-         <property name="text">
-          <string>0</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelEpochHeader">
-         <property name="text">
-          <string>Epoch:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelEpoch">
-         <property name="font">
-          <font>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Number of complete passes over the training set</string>
-         </property>
-         <property name="text">
-          <string>0</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="iterEpochLayout">
+         <item>
+          <layout class="QVBoxLayout" name="iterLayout">
+           <item>
+            <widget class="QLabel" name="labelIterationHeader">
+             <property name="text">
+              <string>Iteration:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="labelIteration">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string>Current training iteration count</string>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="epochLayout">
+           <item>
+            <widget class="QLabel" name="labelEpochHeader">
+             <property name="text">
+              <string>Epoch:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="labelEpoch">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string>Current epoch number</string>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="Line" name="line1">
@@ -374,24 +386,28 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_save">
-         <property name="toolTip">
-          <string>Save network weights to mynet.csv</string>
-         </property>
-         <property name="text">
-          <string>Save</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton_load">
-         <property name="toolTip">
-          <string>Load network weights from mynet.csv</string>
-         </property>
-         <property name="text">
-          <string>Load</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="saveLoadLayout">
+         <item>
+          <widget class="QPushButton" name="pushButton_save">
+           <property name="toolTip">
+            <string>Save network weights to mynet.csv</string>
+           </property>
+           <property name="text">
+            <string>Save</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_load">
+           <property name="toolTip">
+            <string>Load network weights from mynet.csv</string>
+           </property>
+           <property name="text">
+            <string>Load</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="Line" name="line4">
@@ -401,22 +417,12 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonStart">
+        <widget class="QPushButton" name="pushButtonStartStop">
          <property name="toolTip">
           <string>Start training the neural network</string>
          </property>
          <property name="text">
           <string>Start</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton_stop">
-         <property name="toolTip">
-          <string>Stop training after current iteration</string>
-         </property>
-         <property name="text">
-          <string>Stop</string>
          </property>
         </widget>
        </item>
@@ -462,6 +468,19 @@
          </property>
          <property name="wordWrap">
           <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonEditArch">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>Edit network layer architecture</string>
+         </property>
+         <property name="text">
+          <string>Edit...</string>
          </property>
         </widget>
        </item>

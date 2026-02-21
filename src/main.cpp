@@ -1,3 +1,7 @@
+
+
+#define PROGRAM_VERSION = "1.0.0"
+
 #include "mainwindow.h"
 
 #include <QApplication>

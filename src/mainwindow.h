@@ -35,10 +35,10 @@ protected:
   void closeEvent(QCloseEvent *event) override;
 
 private slots:
-  void on_pushButtonStart_clicked();
+  void on_pushButtonStartStop_clicked();
   void on_pushButton_save_clicked();
   void on_pushButton_load_clicked();
-  void on_pushButton_stop_clicked();
+  void on_pushButtonEditArch_clicked();
 
 private:
   void setupChart();

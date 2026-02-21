@@ -46,8 +46,11 @@ public:
     QSpacerItem *sampleBottomSpacer;
     QGroupBox *groupBoxControls;
     QVBoxLayout *controlsLayout;
+    QHBoxLayout *iterEpochLayout;
+    QVBoxLayout *iterLayout;
     QLabel *labelIterationHeader;
     QLabel *labelIteration;
+    QVBoxLayout *epochLayout;
     QLabel *labelEpochHeader;
     QLabel *labelEpoch;
     QFrame *line1;
@@ -61,15 +64,16 @@ public:
     QLabel *labelBatchSizeHeader;
     QSpinBox *spinBoxBatchSize;
     QFrame *line3;
+    QHBoxLayout *saveLoadLayout;
     QPushButton *pushButton_save;
     QPushButton *pushButton_load;
     QFrame *line4;
-    QPushButton *pushButtonStart;
-    QPushButton *pushButton_stop;
+    QPushButton *pushButtonStartStop;
     QSpacerItem *controlsBottomSpacer;
     QFrame *line5;
     QLabel *labelArchitectureHeader;
     QLabel *labelArchitecture;
+    QPushButton *pushButtonEditArch;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *MainWindow)
@@ -177,10 +181,14 @@ public:
         groupBoxControls->setMinimumSize(QSize(180, 0));
         controlsLayout = new QVBoxLayout(groupBoxControls);
         controlsLayout->setObjectName("controlsLayout");
+        iterEpochLayout = new QHBoxLayout();
+        iterEpochLayout->setObjectName("iterEpochLayout");
+        iterLayout = new QVBoxLayout();
+        iterLayout->setObjectName("iterLayout");
         labelIterationHeader = new QLabel(groupBoxControls);
         labelIterationHeader->setObjectName("labelIterationHeader");
 
-        controlsLayout->addWidget(labelIterationHeader);
+        iterLayout->addWidget(labelIterationHeader);
 
         labelIteration = new QLabel(groupBoxControls);
         labelIteration->setObjectName("labelIteration");
@@ -188,18 +196,29 @@ public:
         font3.setBold(true);
         labelIteration->setFont(font3);
 
-        controlsLayout->addWidget(labelIteration);
+        iterLayout->addWidget(labelIteration);
 
+
+        iterEpochLayout->addLayout(iterLayout);
+
+        epochLayout = new QVBoxLayout();
+        epochLayout->setObjectName("epochLayout");
         labelEpochHeader = new QLabel(groupBoxControls);
         labelEpochHeader->setObjectName("labelEpochHeader");
 
-        controlsLayout->addWidget(labelEpochHeader);
+        epochLayout->addWidget(labelEpochHeader);
 
         labelEpoch = new QLabel(groupBoxControls);
         labelEpoch->setObjectName("labelEpoch");
         labelEpoch->setFont(font3);
 
-        controlsLayout->addWidget(labelEpoch);
+        epochLayout->addWidget(labelEpoch);
+
+
+        iterEpochLayout->addLayout(epochLayout);
+
+
+        controlsLayout->addLayout(iterEpochLayout);
 
         line1 = new QFrame(groupBoxControls);
         line1->setObjectName("line1");
@@ -276,15 +295,20 @@ public:
 
         controlsLayout->addWidget(line3);
 
+        saveLoadLayout = new QHBoxLayout();
+        saveLoadLayout->setObjectName("saveLoadLayout");
         pushButton_save = new QPushButton(groupBoxControls);
         pushButton_save->setObjectName("pushButton_save");
 
-        controlsLayout->addWidget(pushButton_save);
+        saveLoadLayout->addWidget(pushButton_save);
 
         pushButton_load = new QPushButton(groupBoxControls);
         pushButton_load->setObjectName("pushButton_load");
 
-        controlsLayout->addWidget(pushButton_load);
+        saveLoadLayout->addWidget(pushButton_load);
+
+
+        controlsLayout->addLayout(saveLoadLayout);
 
         line4 = new QFrame(groupBoxControls);
         line4->setObjectName("line4");
@@ -293,15 +317,10 @@ public:
 
         controlsLayout->addWidget(line4);
 
-        pushButtonStart = new QPushButton(groupBoxControls);
-        pushButtonStart->setObjectName("pushButtonStart");
+        pushButtonStartStop = new QPushButton(groupBoxControls);
+        pushButtonStartStop->setObjectName("pushButtonStartStop");
 
-        controlsLayout->addWidget(pushButtonStart);
-
-        pushButton_stop = new QPushButton(groupBoxControls);
-        pushButton_stop->setObjectName("pushButton_stop");
-
-        controlsLayout->addWidget(pushButton_stop);
+        controlsLayout->addWidget(pushButtonStartStop);
 
         controlsBottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
@@ -327,6 +346,12 @@ public:
         labelArchitecture->setWordWrap(true);
 
         controlsLayout->addWidget(labelArchitecture);
+
+        pushButtonEditArch = new QPushButton(groupBoxControls);
+        pushButtonEditArch->setObjectName("pushButtonEditArch");
+        pushButtonEditArch->setEnabled(true);
+
+        controlsLayout->addWidget(pushButtonEditArch);
 
 
         horizontalLayout->addWidget(groupBoxControls);
@@ -368,7 +393,7 @@ public:
         labelIteration->setText(QCoreApplication::translate("MainWindow", "0", nullptr));
         labelEpochHeader->setText(QCoreApplication::translate("MainWindow", "Epoch:", nullptr));
 #if QT_CONFIG(tooltip)
-        labelEpoch->setToolTip(QCoreApplication::translate("MainWindow", "Number of complete passes over the training set", nullptr));
+        labelEpoch->setToolTip(QCoreApplication::translate("MainWindow", "Current epoch number", nullptr));
 #endif // QT_CONFIG(tooltip)
         labelEpoch->setText(QCoreApplication::translate("MainWindow", "0", nullptr));
         labelAccuracyHeader->setText(QCoreApplication::translate("MainWindow", "Accuracy:", nullptr));
@@ -397,18 +422,18 @@ public:
 #endif // QT_CONFIG(tooltip)
         pushButton_load->setText(QCoreApplication::translate("MainWindow", "Load", nullptr));
 #if QT_CONFIG(tooltip)
-        pushButtonStart->setToolTip(QCoreApplication::translate("MainWindow", "Start training the neural network", nullptr));
+        pushButtonStartStop->setToolTip(QCoreApplication::translate("MainWindow", "Start training the neural network", nullptr));
 #endif // QT_CONFIG(tooltip)
-        pushButtonStart->setText(QCoreApplication::translate("MainWindow", "Start", nullptr));
-#if QT_CONFIG(tooltip)
-        pushButton_stop->setToolTip(QCoreApplication::translate("MainWindow", "Stop training after current iteration", nullptr));
-#endif // QT_CONFIG(tooltip)
-        pushButton_stop->setText(QCoreApplication::translate("MainWindow", "Stop", nullptr));
+        pushButtonStartStop->setText(QCoreApplication::translate("MainWindow", "Start", nullptr));
         labelArchitectureHeader->setText(QCoreApplication::translate("MainWindow", "Architecture:", nullptr));
 #if QT_CONFIG(tooltip)
         labelArchitecture->setToolTip(QCoreApplication::translate("MainWindow", "Neural network layer topology", nullptr));
 #endif // QT_CONFIG(tooltip)
         labelArchitecture->setText(QCoreApplication::translate("MainWindow", "-", nullptr));
+#if QT_CONFIG(tooltip)
+        pushButtonEditArch->setToolTip(QCoreApplication::translate("MainWindow", "Edit network layer architecture", nullptr));
+#endif // QT_CONFIG(tooltip)
+        pushButtonEditArch->setText(QCoreApplication::translate("MainWindow", "Edit...", nullptr));
     } // retranslateUi
 
 };
