@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "backproptrainer.h"
 #include "datasetloader.h"
 #include "net.h"
 
@@ -35,6 +34,9 @@ MainWindow::MainWindow(QWidget *parent)
   }
 
   setupChart();
+
+  // Display network architecture
+  ui->labelArchitecture->setText("784 INPUT\n256 TANH\n10 SMAX");
 }
 
 MainWindow::~MainWindow() {
@@ -128,8 +130,6 @@ void MainWindow::on_pushButtonStart_clicked() {
   running = true;
 
   double values[NUM_DIGITS];
-  BackPropTrainer testEvaluator;
-  BackPropTrainer trainEvaluator;
   size_t lastPlottedTestIdx = 0;
   size_t lastPlottedTrainIdx = 0;
 
@@ -157,8 +157,9 @@ void MainWindow::on_pushButtonStart_clicked() {
       }
     }
 
-    // Update iteration counter in UI
+    // Update iteration and epoch counters in UI
     ui->labelIteration->setText(QString::number(trainIndex));
+    ui->labelEpoch->setText(QString::number(trainIndex / EPOCH_LOG_INTERVAL));
     QApplication::processEvents();
 
     // Launch accuracy evaluations periodically
@@ -253,13 +254,19 @@ void MainWindow::on_pushButton_save_clicked() { net->saveTo("mynet.csv"); }
 
 void MainWindow::on_pushButton_load_clicked() { net->loadFrom("mynet.csv"); }
 
-void MainWindow::on_pushButton_stop_clicked() { running = false; }
+void MainWindow::on_pushButton_stop_clicked() {
+  running = false;
+  testEvaluator.cancelAll();
+  trainEvaluator.cancelAll();
+}
 
 void MainWindow::closeEvent(QCloseEvent *event) {
   running = false;
+  testEvaluator.cancelAll();
+  trainEvaluator.cancelAll();
   if (this->running) {
     net->saveTo("mynet.csv");
     std::cout << "Auto-saved to mynet.csv" << std::endl;
-  } 
+  }
   QMainWindow::closeEvent(event);
 }

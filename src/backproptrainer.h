@@ -27,6 +27,7 @@ public:
   BackPropTrainerWorker &operator=(const BackPropTrainerWorker &) = delete;
 
   bool start(DataSetLoader *dataSets);
+  void cancel();
 
   double getErrorRate() const;
   bool isRunning() const;
@@ -45,6 +46,7 @@ private:
   double m_errorRate = 0.0;
   bool m_running = false;
   bool m_useTrainData;
+  std::atomic<bool> m_cancelled{false};
   std::thread m_thread;
   mutable std::mutex m_mutex;
   std::unique_ptr<Net> m_netCopy;
@@ -61,6 +63,8 @@ public:
 
   bool test(int id, Net *net, DataSetLoader *dataSets,
             bool useTrainData = false);
+
+  void cancelAll();
 
   /**
    * @brief Heuristic overfitting check by counting sequential error increases.

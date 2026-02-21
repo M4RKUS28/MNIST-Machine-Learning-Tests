@@ -6,9 +6,9 @@
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
 
-
 #include <memory>
 
+#include "backproptrainer.h"
 class DataSetLoader;
 class Net;
 
@@ -59,6 +59,10 @@ private:
 
   bool running = false;
   size_t trainIndex = 0;
+
+  // Evaluators (member so stop/close can cancel workers)
+  BackPropTrainer testEvaluator;
+  BackPropTrainer trainEvaluator;
 };
 
 #endif // MAINWINDOW_H

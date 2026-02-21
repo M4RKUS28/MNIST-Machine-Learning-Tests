@@ -27,6 +27,8 @@ bool BackPropTrainerWorker::start(DataSetLoader *dataSets) {
     m_errorRate = 0.0;
   }
 
+  m_cancelled.store(false);
+
   try {
     m_thread = std::thread(run, this, dataSets, m_useTrainData);
   } catch (const std::exception &e) {
@@ -40,6 +42,8 @@ bool BackPropTrainerWorker::start(DataSetLoader *dataSets) {
   }
   return true;
 }
+
+void BackPropTrainerWorker::cancel() { m_cancelled.store(true); }
 
 double BackPropTrainerWorker::getErrorRate() const {
   std::lock_guard<std::mutex> lock(m_mutex);
@@ -77,6 +81,9 @@ void BackPropTrainerWorker::run(BackPropTrainerWorker *self,
   double output[NUM_OUTPUTS];
 
   for (unsigned i = 0; i < dataSize; ++i) {
+    if (self->m_cancelled.load())
+      break;
+
     self->getNetCopy()->feedForward(data[i]->pixels.get());
     self->getNetCopy()->getResults(output);
 
@@ -143,4 +150,11 @@ int BackPropTrainer::isOverfitting() const {
   }
 
   return overfittingScore;
+}
+
+void BackPropTrainer::cancelAll() {
+  for (auto &worker : m_workers) {
+    if (worker->isRunning())
+      worker->cancel();
+  }
 }
