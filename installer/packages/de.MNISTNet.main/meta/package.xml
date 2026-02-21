@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package>
-   <DisplayName>MNIST-Net 1.0.1</DisplayName>
-   <Description>A simple App to test my own C++ Neuronal Network Lib with MNIST</Description>
-   <Version>1.0.1</Version>
+   <DisplayName>MNIST-Net 1.0.2</DisplayName>
+   <Description></Description>
+   <Version>1.0.2</Version>
    <Default>true</Default>
    <ReleaseDate>2026-02-21</ReleaseDate>
    <Operations>

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Installer>
 <Name>MNIST-Net</Name>
-    <Version>1.0.1</Version>
-    <Title><Name>MNIST-Net</Name> Installer</Title>
+    <Version>1.0.2</Version>
+    <Title><Name>MNIST Net</Name> Installer</Title>
     <InstallerApplicationIcon>installerIcon1</InstallerApplicationIcon>
     <InstallerWindowIcon>installerIcon2</InstallerWindowIcon>
-      <Publisher>Markus</Publisher>
-        <StartMenuDir>MNIST-Net</StartMenuDir>
+      <Publisher>MMarkus</Publisher>
+        <StartMenuDir>MNISTNet</StartMenuDir>
         <TargetDir>@ApplicationsDir@/MNIST-Net/</TargetDir>
         <WizardDefaultWidth>800</WizardDefaultWidth>
         <WizardDefaultHeight>500</WizardDefaultHeight>
         <MaintenanceToolName>MNIST-NetMaintenanceTool</MaintenanceToolName>
         <RemoteRepositories>
             <Repository>
-                <Url>https://github.com/M4RKUS28/MNIST-Machine-Learning-Tests</Url>
+                <Url>https://github.com/M4RKUS28/MNIST-Machine-Learning-Tests/tree/main/installer/repository</Url>
                 <Enabled>1</Enabled>
                 <DisplayName>Main-Repo</DisplayName>
             </Repository>

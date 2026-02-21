@@ -1,6 +1,6 @@
 
 
-#define PROGRAM_VERSION = "1.0.1"
+#define PROGRAM_VERSION = "1.0.2"
 
 #include "mainwindow.h"
 

@@ -8,9 +8,9 @@ Component.prototype.createOperations = function() {
    component.createOperations();
    if(systemInfo.productType === "windows") {
 
-      component.addOperation("CreateShortcut", "@TargetDir@/bin/MNIST-Net.exe", "@StartMenuDir@/MNIST-Net.lnk", "description=A simple App to test my own C++ Neuronal Network Lib with MNIST");
+      component.addOperation("CreateShortcut", "@TargetDir@/bin/MNIST-Net.exe", "@StartMenuDir@/MNIST-Net.lnk", "description=");
 
-      component.addOperation("CreateShortcut", "@TargetDir@/bin/MNIST-Net.exe", "@HomeDir@/Desktop/MNIST-Net.lnk", "description=A simple App to test my own C++ Neuronal Network Lib with MNIST");
+      component.addOperation("CreateShortcut", "@TargetDir@/bin/MNIST-Net.exe", "@HomeDir@/Desktop/MNIST-Net.lnk", "description=");
 
    }
 }

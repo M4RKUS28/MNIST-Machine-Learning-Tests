@@ -71,3 +71,4 @@ installer/MNIST-NetOnlineInstaller.exe
 test_values.txt
 train_values.txt
 mynet.csv
+installer/packages/de.MNISTNet.main/data/
