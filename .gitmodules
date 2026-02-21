@@ -1,3 +1,6 @@
 [submodule "libs/GenNet"]
 	path = libs/GenNet
 	url = https://github.com/M4RKUS28/GenNet.git
+[submodule "libs/MUpdaterLib"]
+	path = libs/MUpdaterLib
+	url = https://github.com/M4RKUS28/MUpdaterLib.git
