@@ -275,8 +275,15 @@ void MainWindow::on_pushButton_save_clicked() { net->saveTo("mynet.csv"); }
 void MainWindow::on_pushButton_load_clicked() { net->loadFrom("mynet.csv"); }
 
 void MainWindow::on_pushButtonReset_clicked() {
-  if (running)
-    return;
+  if (running) {
+    // Stop training first
+    running = false;
+    ui->pushButtonStartStop->setEnabled(false);
+    ui->pushButtonStartStop->setText("Stopping...");
+    testEvaluator.cancelAll();
+    trainEvaluator.cancelAll();
+    // The training loop will exit and restore the button state
+  }
 
   // Recreate network with same topology (reinitialises weights)
   net = std::make_unique<Net>(net->getTopologyStr(), 0.025);
