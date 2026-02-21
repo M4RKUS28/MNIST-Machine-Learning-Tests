@@ -4,6 +4,7 @@
 #define PROGRAM_VERSION "1.0.2"
 
 #include <QMainWindow>
+#include <QThread>
 
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
@@ -11,11 +12,10 @@
 
 #include <memory>
 
-#include "backproptrainer.h"
-
 class DataSetLoader;
 class Net;
 class DialogUeber;
+class TrainingWorker;
 class QLineSeries;
 class QChart;
 class QChartView;
@@ -45,10 +45,18 @@ private slots:
   void on_pushButtonReset_clicked();
   void on_pushButton_ueber_clicked();
 
+  // Slots for TrainingWorker signals (queued, run on GUI thread)
+  void onIterationUpdated(unsigned iter, unsigned epoch);
+  void onSampleReady(QImage image, int predicted, unsigned label);
+  void onTestAccuracyReady(double iteration, double accuracy);
+  void onTrainAccuracyReady(double iteration, double accuracy);
+  void onTrainingFinished(unsigned lastTrainIndex);
+
 private:
   void setupChart();
   void addTestAccuracyPoint(double iteration, double accuracy);
   void addTrainAccuracyPoint(double iteration, double accuracy);
+  void cleanupTraining();
 
   Ui::MainWindow *ui;
   std::unique_ptr<DataSetLoader> dataSets;
@@ -66,9 +74,9 @@ private:
   unsigned trainIndex = 0;
   DialogUeber *diaUber = nullptr;
 
-  // Evaluators (member so stop/close can cancel workers)
-  BackPropTrainer testEvaluator;
-  BackPropTrainer trainEvaluator;
+  // Training thread
+  QThread *m_trainThread = nullptr;
+  TrainingWorker *m_trainWorker = nullptr;
 };
 
 #endif // MAINWINDOW_H

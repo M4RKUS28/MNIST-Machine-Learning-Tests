@@ -5,6 +5,7 @@
 #include "datasetloader.h"
 #include "dialogueber.h"
 #include "net.h"
+#include "trainingworker.h"
 
 #include <QApplication>
 #include <QCloseEvent>
@@ -47,12 +48,21 @@ MainWindow::MainWindow(QWidget *parent)
       "M$RKUS", "MNIST-Net", PROGRAM_VERSION, Qt::blue, this, false, true);
   diaUber->setPixmap(QPixmap(":/icons/appicon.ico").scaled(128, 128));
   diaUber->setContributorList({"Markus-Huber"});
-  diaUber->setDescription("https://github.com/M4RKUS28/MNIST-NN", QFile(":/docs/short_description.txt"), "github.com/M4RKUS28/MNIST-NN");
+  diaUber->setDescription("https://github.com/M4RKUS28/MNIST-NN",
+                          QFile(":/docs/short_description.txt"),
+                          "github.com/M4RKUS28/MNIST-NN");
   diaUber->setIssueWebsite("https://github.com/M4RKUS28/MNIST-NN/issues");
 }
 
 MainWindow::~MainWindow() {
-  running = false;
+  // Stop any running training
+  if (m_trainWorker)
+    m_trainWorker->stop();
+  if (m_trainThread && m_trainThread->isRunning())
+    m_trainThread->wait();
+  delete m_trainWorker;
+  m_trainWorker = nullptr;
+
   delete diaUber;
   delete ui;
   // dataSets and net cleaned up by unique_ptr
@@ -125,26 +135,16 @@ void MainWindow::addTrainAccuracyPoint(double iteration, double accuracy) {
 }
 
 // ---------------------------------------------------------------------------
-// Training
+// Training — start / stop via worker thread
 // ---------------------------------------------------------------------------
-
-static constexpr int NUM_DIGITS = 10;
-static constexpr unsigned TRAIN_SET_SIZE = 60000;
-static constexpr unsigned EPOCH_LOG_INTERVAL = TRAIN_SET_SIZE;
-static constexpr unsigned UI_UPDATE_INTERVAL = 500;
-static constexpr unsigned TEST_INTERVAL = 500;
-static constexpr unsigned TRAIN_TEST_INTERVAL = 3000;
-static constexpr unsigned ERROR_DISPLAY_INTERVAL = 100;
-static constexpr unsigned CHART_UPDATE_INTERVAL = 500;
 
 void MainWindow::on_pushButtonStartStop_clicked() {
   if (running) {
     // --- STOP pressed ---
-    running = false;
     ui->pushButtonStartStop->setEnabled(false);
     ui->pushButtonStartStop->setText("Stopping...");
-    testEvaluator.cancelAll();
-    trainEvaluator.cancelAll();
+    if (m_trainWorker)
+      m_trainWorker->stop();
     return;
   }
 
@@ -154,127 +154,93 @@ void MainWindow::on_pushButtonStartStop_clicked() {
   ui->pushButtonStartStop->setToolTip("Stop training after current iteration");
   ui->pushButtonEditArch->setEnabled(false);
 
-  double values[NUM_DIGITS];
-  size_t lastPlottedTestIdx = 0;
-  size_t lastPlottedTrainIdx = 0;
+  // Create worker and move to thread
+  m_trainWorker = new TrainingWorker(net.get(), dataSets.get(), trainIndex,
+                                     ui->doubleSpinBoxLearnRate->value(),
+                                     ui->doubleSpinBoxMomentum->value(),
+                                     ui->spinBoxBatchSize->value());
 
-  // Log start of new training session
-  for (const char *filename : {"train_values.txt", "test_values.txt"}) {
-    QFile out(filename);
-    if (out.open(QIODevice::ReadWrite | QIODevice::Append)) {
-      out.write("New Training...\n");
-      out.close();
-    }
+  m_trainThread = new QThread(this);
+  m_trainWorker->moveToThread(m_trainThread);
+
+  // Wire up signals
+  connect(m_trainThread, &QThread::started, m_trainWorker,
+          &TrainingWorker::run);
+
+  connect(m_trainWorker, &TrainingWorker::iterationUpdated, this,
+          &MainWindow::onIterationUpdated);
+  connect(m_trainWorker, &TrainingWorker::sampleReady, this,
+          &MainWindow::onSampleReady);
+  connect(m_trainWorker, &TrainingWorker::testAccuracyReady, this,
+          &MainWindow::onTestAccuracyReady);
+  connect(m_trainWorker, &TrainingWorker::trainAccuracyReady, this,
+          &MainWindow::onTrainAccuracyReady);
+  connect(m_trainWorker, &TrainingWorker::trainingFinished, this,
+          &MainWindow::onTrainingFinished);
+
+  // Quit the thread event loop once run() finishes (direct so it works
+  // even when the main event loop is blocked in wait())
+  connect(m_trainWorker, &TrainingWorker::trainingFinished, m_trainThread,
+          &QThread::quit, Qt::DirectConnection);
+
+  m_trainThread->start();
+}
+
+// ---------------------------------------------------------------------------
+// Worker signal handlers (run on GUI thread)
+// ---------------------------------------------------------------------------
+
+void MainWindow::onIterationUpdated(unsigned iter, unsigned epoch) {
+  ui->labelIteration->setText(QString::number(iter));
+  ui->labelEpoch->setText(QString::number(epoch));
+
+  // Push current hyperparameter values to the worker (atomic setters)
+  if (m_trainWorker) {
+    m_trainWorker->setLearningRate(ui->doubleSpinBoxLearnRate->value());
+    m_trainWorker->setMomentum(ui->doubleSpinBoxMomentum->value());
+    m_trainWorker->setBatchSize(ui->spinBoxBatchSize->value());
   }
+}
 
-  for (; trainIndex < 3000000 && running; trainIndex++) {
-    // Epoch boundary logging
-    if (trainIndex % EPOCH_LOG_INTERVAL == 0) {
-      unsigned epoch = trainIndex / EPOCH_LOG_INTERVAL;
-      std::cout << "=> Epoch " << epoch << std::endl;
+void MainWindow::onSampleReady(QImage image, int predicted, unsigned label) {
+  ui->labelSampleImage->setPixmap(QPixmap::fromImage(image));
+  ui->labelSampleImage->update();
+  ui->labelPredicted->setText(QString::number(predicted));
+  ui->labelCorrect->setText(QString::number(label));
+}
 
-      for (const char *filename : {"train_values.txt", "test_values.txt"}) {
-        QFile out(filename);
-        if (out.open(QIODevice::ReadWrite | QIODevice::Append)) {
-          out.write(QString("=> Epoch %1\n").arg(epoch).toUtf8());
-          out.close();
-        }
-      }
-    }
+void MainWindow::onTestAccuracyReady(double iteration, double accuracy) {
+  addTestAccuracyPoint(iteration, accuracy);
+  ui->labelTestAccuracy->setText(QString::number(accuracy, 'f', 2) + "%");
+}
 
-    // Update iteration and epoch counters in UI
-    ui->labelIteration->setText(QString::number(trainIndex));
-    ui->labelEpoch->setText(QString::number(trainIndex / EPOCH_LOG_INTERVAL));
-    QApplication::processEvents();
+void MainWindow::onTrainAccuracyReady(double iteration, double accuracy) {
+  addTrainAccuracyPoint(iteration, accuracy);
+  ui->labelTrainAccuracy->setText(QString::number(accuracy, 'f', 2) + "%");
+}
 
-    // Launch accuracy evaluations periodically
-    if (trainIndex % TEST_INTERVAL == 0)
-      testEvaluator.test(trainIndex, net.get(), dataSets.get());
-    if (trainIndex % TRAIN_TEST_INTERVAL == 0)
-      trainEvaluator.test(trainIndex, net.get(), dataSets.get(), true);
+void MainWindow::onTrainingFinished(unsigned lastTrainIndex) {
+  if (!m_trainThread)
+    return; // Already cleaned up (e.g. by Reset)
 
-    // Get training sample
-    const auto &trainData = dataSets->trainData();
-    Sample *sample = trainData[trainIndex % TRAIN_SET_SIZE].get();
+  trainIndex = lastTrainIndex;
+  cleanupTraining();
 
-    // Show sample image periodically
-    if (trainIndex % UI_UPDATE_INTERVAL == 0) {
-      ui->labelSampleImage->setPixmap(
-          QPixmap::fromImage(sample->image->scaled(280, 280)));
-      ui->labelSampleImage->update();
-      QApplication::processEvents();
-    }
-
-    // Forward pass
-    net->feedForward(sample->pixels.get());
-    net->getResults(values);
-
-    // Find predicted digit
-    int predicted = -1;
-    double maxVal = 0.0;
-    for (int i = 0; i < NUM_DIGITS; i++) {
-      if (values[i] > maxVal) {
-        maxVal = values[i];
-        predicted = i;
-      }
-    }
-
-    // Create target vector (one-hot with 0.99 / 0.01)
-    for (int i = 0; i < NUM_DIGITS; i++)
-      values[i] = (static_cast<unsigned>(i) == sample->label) ? 0.99 : 0.01;
-
-    // Backpropagation
-    double eta = ui->doubleSpinBoxLearnRate->value();
-    double alpha = ui->doubleSpinBoxMomentum->value();
-    int batchSize = ui->spinBoxBatchSize->value();
-    net->backProp(values, eta, alpha, batchSize > 0);
-
-    if (batchSize > 0 && trainIndex % static_cast<unsigned>(batchSize) == 0)
-      net->applyBatch();
-
-    // Update accuracy display and chart
-    if (trainIndex % CHART_UPDATE_INTERVAL == 0) {
-      // Plot all newly finished test workers
-      const auto &testWorkers = testEvaluator.workers();
-      for (size_t i = lastPlottedTestIdx; i < testWorkers.size(); ++i) {
-        if (!testWorkers[i]->isRunning()) {
-          double accuracy = 100.0 - testWorkers[i]->getErrorRate() * 100.0;
-          addTestAccuracyPoint(testWorkers[i]->getId(), accuracy);
-          ui->labelAccuracy->setText(QString::number(accuracy, 'f', 2) + "%");
-          lastPlottedTestIdx = i + 1;
-        } else {
-          break; // earlier workers must finish before later ones
-        }
-      }
-      // Plot all newly finished train workers
-      const auto &trainWorkers = trainEvaluator.workers();
-      for (size_t i = lastPlottedTrainIdx; i < trainWorkers.size(); ++i) {
-        if (!trainWorkers[i]->isRunning()) {
-          double accuracy = 100.0 - trainWorkers[i]->getErrorRate() * 100.0;
-          addTrainAccuracyPoint(trainWorkers[i]->getId(), accuracy);
-          lastPlottedTrainIdx = i + 1;
-        } else {
-          break;
-        }
-      }
-      QApplication::processEvents();
-    }
-
-    // Update prediction display
-    if (trainIndex % UI_UPDATE_INTERVAL == 0) {
-      ui->labelPredicted->setText(QString::number(predicted));
-      ui->labelCorrect->setText(QString::number(sample->label));
-      QApplication::processEvents();
-    }
-
-    QApplication::processEvents();
-  }
-
-  // Training loop exited — restore button state
+  running = false;
   ui->pushButtonStartStop->setText("Start");
   ui->pushButtonStartStop->setToolTip("Start training the neural network");
   ui->pushButtonStartStop->setEnabled(true);
   ui->pushButtonEditArch->setEnabled(true);
+}
+
+void MainWindow::cleanupTraining() {
+  if (m_trainThread) {
+    m_trainThread->wait();
+    delete m_trainWorker;
+    m_trainWorker = nullptr;
+    m_trainThread->deleteLater();
+    m_trainThread = nullptr;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -287,13 +253,16 @@ void MainWindow::on_pushButton_load_clicked() { net->loadFrom("mynet.csv"); }
 
 void MainWindow::on_pushButtonReset_clicked() {
   if (running) {
-    // Stop training first
+    // Stop training first and wait for thread to finish
+    if (m_trainWorker)
+      m_trainWorker->stop();
+    if (m_trainThread && m_trainThread->isRunning())
+      m_trainThread->wait();
+    delete m_trainWorker;
+    m_trainWorker = nullptr;
+    delete m_trainThread;
+    m_trainThread = nullptr;
     running = false;
-    ui->pushButtonStartStop->setEnabled(false);
-    ui->pushButtonStartStop->setText("Stopping...");
-    testEvaluator.cancelAll();
-    trainEvaluator.cancelAll();
-    // The training loop will exit and restore the button state
   }
 
   // Recreate network with same topology (reinitialises weights)
@@ -310,11 +279,16 @@ void MainWindow::on_pushButtonReset_clicked() {
   trainIndex = 0;
   ui->labelIteration->setText("0");
   ui->labelEpoch->setText("0");
-  ui->labelAccuracy->setText("-");
+  ui->labelTestAccuracy->setText("-");
+  ui->labelTrainAccuracy->setText("-");
 
   // Update architecture label
   ui->labelArchitecture->setText(
       QString::fromStdString(net->getTopologyStr()).replace(',', '\n'));
+
+  ui->pushButtonStartStop->setText("Start");
+  ui->pushButtonStartStop->setEnabled(true);
+  ui->pushButtonEditArch->setEnabled(true);
 
   std::cout << "Network reset" << std::endl;
 }
@@ -351,13 +325,10 @@ void MainWindow::on_pushButtonEditArch_clicked() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-  running = false;
-  testEvaluator.cancelAll();
-  trainEvaluator.cancelAll();
-  if (this->running) {
-    net->saveTo("mynet.csv");
-    std::cout << "Auto-saved to mynet.csv" << std::endl;
-  }
+  if (m_trainWorker)
+    m_trainWorker->stop();
+  if (m_trainThread && m_trainThread->isRunning())
+    m_trainThread->wait();
   QMainWindow::closeEvent(event);
 }
 

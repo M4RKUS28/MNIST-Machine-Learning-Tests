@@ -13,13 +13,15 @@ SOURCES += \
     src/backproptrainer.cpp \
     src/datasetloader.cpp \
     src/main.cpp \
-    src/mainwindow.cpp
+    src/mainwindow.cpp \
+    src/trainingworker.cpp
 
 HEADERS += \
     src/architecturedialog.h \
     src/backproptrainer.h \
     src/datasetloader.h \
-    src/mainwindow.h
+    src/mainwindow.h \
+    src/trainingworker.h
 
 FORMS += \
     src/mainwindow.ui

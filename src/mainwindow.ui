@@ -278,32 +278,60 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="labelAccuracyHeader">
-         <property name="text">
-          <string>Accuracy:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelAccuracy">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Latest test accuracy on the MNIST test set</string>
-         </property>
-         <property name="text">
-          <string>-</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="accuracyLayout">
+         <item>
+          <layout class="QVBoxLayout" name="testAccLayout">
+           <item>
+            <widget class="QLabel" name="labelTestAccuracyHeader">
+             <property name="text">
+              <string>Test Acc:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="labelTestAccuracy">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string>Latest test accuracy on the MNIST test set</string>
+             </property>
+             <property name="text">
+              <string>-</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="trainAccLayout">
+           <item>
+            <widget class="QLabel" name="labelTrainAccuracyHeader">
+             <property name="text">
+              <string>Train Acc:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="labelTrainAccuracy">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string>Latest train accuracy on the MNIST train set</string>
+             </property>
+             <property name="text">
+              <string>-</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="Line" name="line2">
