@@ -34,3 +34,18 @@ DEPENDPATH += $$PWD/../GenNet/src
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../GenNet/release/ -lGenNet
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../GenNet/debug/ -lGenNet
+
+# Application Icon
+win32:RC_ICONS += icons/appicon.ico
+
+# MUpdaterLib:
+win32:CONFIG(release, debug|release): LIBS += -LC:$$PWD/../../Bibliotheken/MUpdater/release/ -lMUpdater
+else:win32:CONFIG(debug, debug|release): LIBS += -LC:$$PWD/../../Bibliotheken/MUpdater/MUpdater/debug/ -lMUpdater
+
+INCLUDEPATH += C:$$PWD/../../Bibliotheken/MUpdater/
+DEPENDPATH += C:$$PWD/../../Bibliotheken/MUpdater/
+
+win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += C:$$PWD/../../Bibliotheken/MUpdater/release/libMUpdater.a
+else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += C:$$PWD/../../Bibliotheken/MUpdater/debug/libMUpdater.a
+else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += C:$$PWD/../../Bibliotheken/MUpdater/release/MUpdater.lib
+else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += C:$$PWD/../../Bibliotheken/MUpdater/debug/MUpdater.lib

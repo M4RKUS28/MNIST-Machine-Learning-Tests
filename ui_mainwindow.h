@@ -69,6 +69,7 @@ public:
     QPushButton *pushButton_load;
     QFrame *line4;
     QPushButton *pushButtonStartStop;
+    QPushButton *pushButtonReset;
     QSpacerItem *controlsBottomSpacer;
     QFrame *line5;
     QLabel *labelArchitectureHeader;
@@ -322,6 +323,11 @@ public:
 
         controlsLayout->addWidget(pushButtonStartStop);
 
+        pushButtonReset = new QPushButton(groupBoxControls);
+        pushButtonReset->setObjectName("pushButtonReset");
+
+        controlsLayout->addWidget(pushButtonReset);
+
         controlsBottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         controlsLayout->addItem(controlsBottomSpacer);
@@ -425,6 +431,10 @@ public:
         pushButtonStartStop->setToolTip(QCoreApplication::translate("MainWindow", "Start training the neural network", nullptr));
 #endif // QT_CONFIG(tooltip)
         pushButtonStartStop->setText(QCoreApplication::translate("MainWindow", "Start", nullptr));
+#if QT_CONFIG(tooltip)
+        pushButtonReset->setToolTip(QCoreApplication::translate("MainWindow", "Reset accuracy, chart, epoch, iteration and reinitialise the network", nullptr));
+#endif // QT_CONFIG(tooltip)
+        pushButtonReset->setText(QCoreApplication::translate("MainWindow", "Reset", nullptr));
         labelArchitectureHeader->setText(QCoreApplication::translate("MainWindow", "Architecture:", nullptr));
 #if QT_CONFIG(tooltip)
         labelArchitecture->setToolTip(QCoreApplication::translate("MainWindow", "Neural network layer topology", nullptr));

@@ -64,3 +64,6 @@ release/
 release*/
 build/
 *.user
+installer/packages/de.MNIST-Net.main/data/*
+installer/MNIST-NetOfflineInstaller.exe
+installer/MNIST-NetOnlineInstaller.exe
