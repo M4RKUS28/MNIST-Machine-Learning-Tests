@@ -67,3 +67,7 @@ build/
 installer/packages/de.MNIST-Net.main/data/*
 installer/MNIST-NetOfflineInstaller.exe
 installer/MNIST-NetOnlineInstaller.exe
+*.rc
+test_values.txt
+train_values.txt
+mynet.csv
