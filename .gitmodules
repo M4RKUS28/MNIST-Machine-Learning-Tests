@@ -1,0 +1,3 @@
+[submodule "libs/GenNet"]
+	path = libs/GenNet
+	url = https://github.com/M4RKUS28/GenNet.git
