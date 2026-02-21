@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Installer>
 <Name>MNIST-Net</Name>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Title><Name>MNIST Net</Name> Installer</Title>
     <InstallerApplicationIcon>installerIcon1</InstallerApplicationIcon>
     <InstallerWindowIcon>installerIcon2</InstallerWindowIcon>
@@ -13,7 +13,7 @@
         <MaintenanceToolName>MNIST-NetMaintenanceTool</MaintenanceToolName>
         <RemoteRepositories>
             <Repository>
-                <Url>https://github.com/M4RKUS28/MNIST-Machine-Learning-Tests/tree/main/installer/repository</Url>
+                <Url>https://media.githubusercontent.com/media/M4RKUS28/MNIST-NN/refs/heads/main/installer/repository</Url>
                 <Enabled>1</Enabled>
                 <DisplayName>Main-Repo</DisplayName>
             </Repository>

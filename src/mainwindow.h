@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#define PROGRAM_VERSION "1.0.2"
+#define PROGRAM_VERSION "1.0.3"
 
 #include <QMainWindow>
 #include <QThread>
