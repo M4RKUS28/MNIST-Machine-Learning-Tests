@@ -90,6 +90,16 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="labelPredictionHeader">
+        <property name="text">
+         <string>Prediction:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="labelPredicted">
         <property name="font">
          <font>
@@ -102,6 +112,16 @@
         </property>
         <property name="text">
          <string>-</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelCorrectHeader">
+        <property name="text">
+         <string>Label:</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>

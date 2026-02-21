@@ -89,6 +89,10 @@ void MainWindow::setupChart() {
   auto *layout = new QVBoxLayout(ui->chartPlaceholder);
   layout->setContentsMargins(0, 0, 0, 0);
   layout->addWidget(chartView);
+
+  // Seed both series with a (0, 0) origin point
+  testAccuracySeries->append(0, 0);
+  trainAccuracySeries->append(0, 0);
 }
 
 void MainWindow::addTestAccuracyPoint(double iteration, double accuracy) {
@@ -125,6 +129,8 @@ void MainWindow::on_pushButtonStart_clicked() {
   double values[NUM_DIGITS];
   BackPropTrainer testEvaluator;
   BackPropTrainer trainEvaluator;
+  size_t lastPlottedTestIdx = 0;
+  size_t lastPlottedTrainIdx = 0;
 
   // Log start of new training session
   for (const char *filename : {"train_values.txt", "test_values.txt"}) {
@@ -201,22 +207,26 @@ void MainWindow::on_pushButtonStart_clicked() {
 
     // Update accuracy display and chart
     if (trainIndex % CHART_UPDATE_INTERVAL == 0) {
-      // Test accuracy
+      // Plot all newly finished test workers
       const auto &testWorkers = testEvaluator.workers();
-      for (int i = static_cast<int>(testWorkers.size()) - 1; i >= 0; --i) {
+      for (size_t i = lastPlottedTestIdx; i < testWorkers.size(); ++i) {
         if (!testWorkers[i]->isRunning()) {
           double accuracy = 100.0 - testWorkers[i]->getErrorRate() * 100.0;
+          addTestAccuracyPoint(testWorkers[i]->getId(), accuracy);
           ui->labelAccuracy->setText(QString::number(accuracy, 'f', 2) + "%");
-          addTestAccuracyPoint(trainIndex, accuracy);
-          break;
+          lastPlottedTestIdx = i + 1;
+        } else {
+          break; // earlier workers must finish before later ones
         }
       }
-      // Train accuracy
+      // Plot all newly finished train workers
       const auto &trainWorkers = trainEvaluator.workers();
-      for (int i = static_cast<int>(trainWorkers.size()) - 1; i >= 0; --i) {
+      for (size_t i = lastPlottedTrainIdx; i < trainWorkers.size(); ++i) {
         if (!trainWorkers[i]->isRunning()) {
           double accuracy = 100.0 - trainWorkers[i]->getErrorRate() * 100.0;
-          addTrainAccuracyPoint(trainIndex, accuracy);
+          addTrainAccuracyPoint(trainWorkers[i]->getId(), accuracy);
+          lastPlottedTrainIdx = i + 1;
+        } else {
           break;
         }
       }
