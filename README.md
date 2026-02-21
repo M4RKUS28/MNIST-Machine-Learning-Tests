@@ -53,7 +53,6 @@ MNIST-Net/
 ## Prerequisites
 
 - **Qt 6** with `core`, `gui`, `widgets`, and `charts` modules
-- **GenNet** library — must be built first (located at `../GenNet/`)
 - **MNIST dataset** — place the four IDX files in `./dataset/`:
   - `train-images-idx3-ubyte`
   - `train-labels-idx1-ubyte`
@@ -63,16 +62,19 @@ MNIST-Net/
 ## Building
 
 ```bash
-# 1. Build GenNet first
-cd ../GenNet
-qmake && make
+# 1. Clone with submodules
+git clone --recurse-submodules https://github.com/M4RKUS28/MNIST-Net.git
+cd MNIST-Net
 
-# 2. Build MNIST-Net
-cd ../MNIST-Net
+# 2. Build GenNet library first
+cd libs/GenNet
+qmake && make
+cd ../..
+
+# 3. Build MNIST-Net
 qmake
 make            # or: mingw32-make / nmake
 ```
-
 
 ## Default Architecture
 
