@@ -1,0 +1,24 @@
+<Updates>
+ <ApplicationName>{AnyApplication}</ApplicationName>
+ <ApplicationVersion>1.0.0</ApplicationVersion>
+ <Checksum>true</Checksum>
+ <PackageUpdate>
+  <Name>de.MNIST-Net.main</Name>
+  <DisplayName>MNIST-Net 1.0.0</DisplayName>
+  <Description>A simple App to test my own C++ Neuronal Network Lib with MNIST</Description>
+  <Version>1.0.0</Version>
+  <Default>true</Default>
+  <ReleaseDate>2026-02-21</ReleaseDate>
+  <Script>installscript.qs</Script>
+  <UpdateFile CompressedSize="43935" OS="Any" UncompressedSize="115240"/>
+  <DownloadableArchives>content.7z</DownloadableArchives>
+  <Operations>
+   <Operation name="Extract">
+    <Argument>@TargetDir@/bin/</Argument>
+   </Operation>
+  </Operations>
+  <SHA1>4db48314f52b9b534f7c24f3e36ebf0a90b0c644</SHA1>
+ </PackageUpdate>
+ <SHA1>01ac435ac2855d421fcefbda7978c87d08c2aa0b</SHA1>
+ <MetadataName>2026-02-21-0159_meta.7z</MetadataName>
+</Updates>
