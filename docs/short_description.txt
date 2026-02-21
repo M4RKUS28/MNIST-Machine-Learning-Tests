@@ -1,0 +1,6 @@
+MNIST-Net ist eine Qt-basierte Desktop-Anwendung zum Trainieren
+und Auswerten neuronaler Netze auf dem MNIST-Datensatz handgeschriebener
+Ziffern. Die Anwendung bietet Echtzeit-Visualisierung des
+Trainingsfortschritts, einen interaktiven Architektur-Editor
+für benutzerdefinierte Netzwerktopologien sowie die Möglichkeit,
+trainierte Gewichte zu speichern und zu laden.

@@ -31,8 +31,8 @@ MainWindow::MainWindow(QWidget *parent)
                                 0.025)) {
   ui->setupUi(this);
 
-  if (!dataSets->loadSets("../dataset")) {
-    std::cerr << "Failed to load MNIST dataset from ../dataset" << std::endl;
+  if (!dataSets->loadSets(":/mnist")) {
+    std::cerr << "Failed to load MNIST dataset from :/mnist" << std::endl;
   }
 
   setupChart();
@@ -45,7 +45,10 @@ MainWindow::MainWindow(QWidget *parent)
   diaUber = new DialogUeber(
       QApplication::applicationDirPath() + "/../MNIST-NetMaintenanceTool.exe",
       "M$RKUS", "MNIST-Net", PROGRAM_VERSION, Qt::blue, this, false, true);
-  diaUber->setPixmap(QPixmap("docs/logo.png").scaled(128, 128));
+  diaUber->setPixmap(QPixmap(":/icons/appicon.ico").scaled(128, 128));
+  diaUber->setContributorList({"Markus-Huber"});
+  diaUber->setDescription("https://github.com/M4RKUS28/MNIST-NN", QFile(":/docs/short_description.txt"), "github.com/M4RKUS28/MNIST-NN");
+  diaUber->setIssueWebsite("https://github.com/M4RKUS28/MNIST-NN/issues");
 }
 
 MainWindow::~MainWindow() {
