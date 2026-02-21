@@ -1,4 +1,4 @@
-QT       += core gui charts
+QT       += core gui charts network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -39,13 +39,13 @@ else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/libs/GenNet/debug/ -lGe
 win32:RC_ICONS += icons/appicon.ico
 
 # MUpdaterLib:
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../Bibliotheken/MUpdater/release/ -lMUpdater
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../Bibliotheken/MUpdater/MUpdater/debug/ -lMUpdater
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/libs/MUpdaterLib/release/ -lMUpdater
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/libs/MUpdaterLib/debug/ -lMUpdater
 
-#INCLUDEPATH += $$PWD/../../Bibliotheken/MUpdater/
-#DEPENDPATH += $$PWD/../../Bibliotheken/MUpdater/
+INCLUDEPATH += $$PWD/libs/MUpdaterLib/src/
+DEPENDPATH += $$PWD/libs/MUpdaterLib/src/
 
-#win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../Bibliotheken/MUpdater/release/libMUpdater.a
-#else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../Bibliotheken/MUpdater/debug/libMUpdater.a
-#else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../Bibliotheken/MUpdater/release/MUpdater.lib
-#else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../Bibliotheken/MUpdater/debug/MUpdater.lib
+win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/libs/MUpdaterLib/release/libMUpdater.a
+else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/libs/MUpdaterLib/debug/libMUpdater.a
+else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/libs/MUpdaterLib/release/MUpdater.lib
+else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/libs/MUpdaterLib/debug/MUpdater.lib

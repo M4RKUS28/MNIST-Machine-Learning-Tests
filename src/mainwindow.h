@@ -1,7 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#define PROGRAM_VERSION "1.0.2"
+
 #include <QMainWindow>
+
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
@@ -9,10 +12,10 @@
 #include <memory>
 
 #include "backproptrainer.h"
+
 class DataSetLoader;
 class Net;
-
-// QT_CHARTS_USE_NAMESPACE
+class DialogUeber;
 class QLineSeries;
 class QChart;
 class QChartView;
@@ -40,6 +43,7 @@ private slots:
   void on_pushButton_load_clicked();
   void on_pushButtonEditArch_clicked();
   void on_pushButtonReset_clicked();
+  void on_pushButton_ueber_clicked();
 
 private:
   void setupChart();
@@ -59,7 +63,8 @@ private:
   QValueAxis *axisY = nullptr;
 
   bool running = false;
-  size_t trainIndex = 0;
+  unsigned trainIndex = 0;
+  DialogUeber *diaUber = nullptr;
 
   // Evaluators (member so stop/close can cancel workers)
   BackPropTrainer testEvaluator;

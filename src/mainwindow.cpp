@@ -3,6 +3,7 @@
 
 #include "architecturedialog.h"
 #include "datasetloader.h"
+#include "dialogueber.h"
 #include "net.h"
 
 #include <QApplication>
@@ -39,10 +40,17 @@ MainWindow::MainWindow(QWidget *parent)
   // Display network architecture (commas → newlines)
   ui->labelArchitecture->setText(
       QString::fromStdString(net->getTopologyStr()).replace(',', '\n'));
+
+  // Setup Über dialog
+  diaUber = new DialogUeber(
+      QApplication::applicationDirPath() + "/../MNIST-NetMaintenanceTool.exe",
+      "M$RKUS", "MNIST-Net", PROGRAM_VERSION, Qt::blue, this, false, true);
+  diaUber->setPixmap(QPixmap("docs/logo.png").scaled(128, 128));
 }
 
 MainWindow::~MainWindow() {
   running = false;
+  delete diaUber;
   delete ui;
   // dataSets and net cleaned up by unique_ptr
   // chart/series owned by chartView (Qt parent-child)
@@ -349,3 +357,5 @@ void MainWindow::closeEvent(QCloseEvent *event) {
   }
   QMainWindow::closeEvent(event);
 }
+
+void MainWindow::on_pushButton_ueber_clicked() { diaUber->show(); }

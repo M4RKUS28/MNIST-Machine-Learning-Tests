@@ -494,6 +494,16 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_ueber">
+         <property name="toolTip">
+          <string>About MNIST-Net</string>
+         </property>
+         <property name="text">
+          <string>Über</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
